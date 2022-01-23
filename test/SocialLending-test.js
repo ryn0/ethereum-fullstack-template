@@ -26,6 +26,7 @@ describe("SocialLending Contract", () => {
   });
 
   describe("Deployment", function () {
+    
     it("Should set the right owner", async function () {
       expect(await SocialLendingContract.owner()).to.equal(owner.address);
     });
@@ -36,6 +37,23 @@ describe("SocialLending Contract", () => {
         ).to.be.revertedWith("Loan amount must be greater than zero.");
 
       });
+
+      it("Should increment loan ID by 1", async function () {
+        await expect(
+        console.log( await  SocialLendingContract.connect(owner).createLoanId(100))).to.equal(0)
+      });
+
+      // it("Should increment loan ID by 1", async function () {
+      //   await expect(
+
+ 
+      //     console.log(await SocialLendingContract.connect(owner).createLoanId(100)))
+      //       // SocialLendingContract.connect(owner).createLoanId(100).then(function (x) {
+      //       //   console.log(x);
+      //       // }))
+      //   //).to.be.revertedWith("Loan amount must be greater than zero.");
+
+      // });
 
   });
 

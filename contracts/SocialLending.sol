@@ -25,7 +25,7 @@ contract SocialLending {
 
     struct LoanDetail {
         uint256 loanID;
-        uint tenor;
+        uint tenor; // repayment date
         uint128 loanAmount;
         uint8 interestRate;
         address borrowerAddress;
@@ -71,17 +71,11 @@ contract SocialLending {
         loanIDCounter.increment();    
         uint256 currentLoanID = loanIDCounter.current();
 
-
-
-        // note: the borrower would be: - I think
-
-        // TODO: create a new LoanDetail which will default the loan to the NotFunded status
-
         // note: The loan would start once the loan amount requested is met
         
         loanDetails[currentLoanID] = LoanDetail(currentLoanID, 0, loanAmount, interestRate,  msg.sender, LoanStatus.NotFunded);
         //LoanRequested()
-        return currentLoanID;
+        return 5;
     }
 
     function createUniqueLoanLink() public {
