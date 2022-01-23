@@ -67,12 +67,10 @@ contract SocialLending {
     function createLoan(
         uint128 _loanAmount
     ) external payable returns (uint loanID) {
+        
         require(_loanAmount > 0, "Loan amount must be greater than zero.");
-
         loanIDCounter.increment();    
         uint256 currentLoanID = loanIDCounter.current();
-
-        // note: The loan would start once the loan amount requested is met
         LoanDetail memory loanDetail = LoanDetail(
                                             currentLoanID,
                                             0,
@@ -88,12 +86,12 @@ contract SocialLending {
     }
 
     function depositToLoan(uint256 _loanID, uint128 _depositAmount) external payable {
+        
         require(_depositAmount > 0, "Deposit amount must be greater than zero.");
         LoanDetail memory loanDetail = loanDetails[_loanID];
         require(loanDetail.loanID > 0, "Loan not found.");
-
         loanDetail.amountDeposited = loanDetail.amountDeposited + _depositAmount;
-        // TODO: address total amount accumulated
+
         if (loanDetail.loanAmount > loanDetail.amountDeposited){
             loanDetails[_loanID] = LoanDetail(
                                           loanDetail.loanID,
@@ -107,7 +105,7 @@ contract SocialLending {
         } else if (loanDetail.amountDeposited >= loanDetail.loanAmount) {
             loanDetails[_loanID] = LoanDetail(
                                           loanDetail.loanID,
-                                          0,
+                                          0, // TODO: set date to repay
                                           loanDetail.loanAmount,
                                           loanDetail.amountDeposited,
                                           loanDetail.amountRepaid,
