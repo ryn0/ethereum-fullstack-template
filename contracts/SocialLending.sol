@@ -26,10 +26,10 @@ contract SocialLending {
     struct LoanDetail {
         uint256 loanID;
         uint tenor;
-        uint128 amount;
+        uint128 loanAmount;
         uint8 interestRate;
         address borrowerAddress;
-        address[] loanBackers;
+        // address[] loanBackers; // TODO: not sure how to store this, will need to map from loan to loan backers somehow
         // uint256 protocolFees; // TODO: don't think about this until everything else is implemented
         LoanStatus loanStatus;
     }
@@ -64,20 +64,22 @@ contract SocialLending {
     }
 
     function createLoanId(
-        uint256 loanAmount
+        uint128 loanAmount
     ) external payable returns (uint loanID) {
         require(loanAmount > 0, "Loan amount must be greater than zero.");
 
         loanIDCounter.increment();    
         uint256 currentLoanID = loanIDCounter.current();
 
-        // note: the borrower would be: msg.sender - I think
+
+
+        // note: the borrower would be: - I think
 
         // TODO: create a new LoanDetail which will default the loan to the NotFunded status
 
         // note: The loan would start once the loan amount requested is met
         
-        //let loanDetail = LoanDetail(loanID, tenor, amount, interestRate, borrowerAddress, loanBackers, LoanStatus.NotFunded);
+        loanDetails[currentLoanID] = LoanDetail(currentLoanID, 0, loanAmount, interestRate,  msg.sender, LoanStatus.NotFunded);
         //LoanRequested()
         return currentLoanID;
     }
