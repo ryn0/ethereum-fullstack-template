@@ -45,12 +45,6 @@ describe("SocialLending Contract", () => {
         .withArgs(1);
       });
 
-      // it("Should increment loan ID by 1", async function () {
-      //   await expect(
-      //   console.log( await  SocialLendingContract.connect(owner).createLoanId(100))).to.equal(0)
-      // });
-
-
 
       // it("Should increment loan ID by 1", async function () {
       //   await expect(

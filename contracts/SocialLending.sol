@@ -64,18 +64,18 @@ contract SocialLending {
     }
 
     function createLoanId(
-        uint128 loanAmount
+        uint128 _loanAmount
     ) external payable returns (uint loanID) {
-        require(loanAmount > 0, "Loan amount must be greater than zero.");
+        require(_loanAmount > 0, "Loan amount must be greater than zero.");
 
         loanIDCounter.increment();    
         uint256 currentLoanID = loanIDCounter.current();
 
         // note: The loan would start once the loan amount requested is met
-        LoanDetail memory loanDetail = LoanDetail(currentLoanID, 0, loanAmount, interestRate,  msg.sender, LoanStatus.NotFunded);
+        LoanDetail memory loanDetail = LoanDetail(currentLoanID, 0, _loanAmount, interestRate,  msg.sender, LoanStatus.NotFunded);
         loanDetails[currentLoanID] = loanDetail;
         emit LoanRequested(currentLoanID);
-        return 5;
+        return loanID;
     }
 
     function createUniqueLoanLink() public {
