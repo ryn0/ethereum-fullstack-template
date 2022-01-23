@@ -25,11 +25,18 @@ describe("SocialLending Contract", () => {
     await SocialLendingContract.deployed();
   });
 
-  // You can nest describe calls to create subsections.
   describe("Deployment", function () {
     it("Should set the right owner", async function () {
       expect(await SocialLendingContract.owner()).to.equal(owner.address);
     });
+
+    it("Should only allow valid loan amounts", async function () {
+        await expect(
+            SocialLendingContract.connect(owner).createLoanId(0)
+        ).to.be.revertedWith("Loan amount must be greater than zero.");
+
+      });
+
   });
 
 });

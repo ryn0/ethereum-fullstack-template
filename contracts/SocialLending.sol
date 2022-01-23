@@ -58,9 +58,12 @@ contract SocialLending {
     }
 
     function createLoanId(
-        address borrower,
         uint256 loanAmount
     ) external payable returns (uint loanID) {
+        require(loanAmount > 0, "Loan amount must be greater than zero.");
+
+        // note: the borrower would be: msg.sender - I think
+
         // TODO: create a new LoanDetail which will default the loan to the NotFunded status
 
         // note: The loan would start once the loan amount requested is met
