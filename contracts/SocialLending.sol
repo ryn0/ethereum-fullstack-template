@@ -16,7 +16,7 @@ contract SocialLending {
     mapping (address => uint) public borrowers;
 
     // loanID -> loan details (note: gets the details of a loan for a given loanID)
-     mapping (uint => LoanDetail) public loanDetails;
+    mapping (uint => LoanDetail) public loanDetails;
 
     // loanID -> loan backers (note: gets all of the backers for a given loanID)
     mapping (uint => LoanBacker[]) public loanBackers;
@@ -27,6 +27,8 @@ contract SocialLending {
         uint256 loanID;
         uint tenor; // repayment date
         uint128 loanAmount;
+        uint128 amountDeposited;
+        uint128 amountRepaid;
         uint8 interestRate;
         address borrowerAddress;
         // address[] loanBackers; // TODO: not sure how to store this, will need to map from loan to loan backers somehow
@@ -44,7 +46,6 @@ contract SocialLending {
     enum LoanStatus {
         NotFunded,
         PartiallyFunded,
-        Funded,
         NeedsRepayment,
         Repaid,
         FailedToRepayByDeadline
@@ -72,16 +73,49 @@ contract SocialLending {
         uint256 currentLoanID = loanIDCounter.current();
 
         // note: The loan would start once the loan amount requested is met
-        LoanDetail memory loanDetail = LoanDetail(currentLoanID, 0, _loanAmount, interestRate, msg.sender, LoanStatus.NotFunded);
+        LoanDetail memory loanDetail = LoanDetail(
+                                            currentLoanID,
+                                            0,
+                                            _loanAmount,
+                                            0,
+                                            0,
+                                            interestRate,
+                                            msg.sender,
+                                            LoanStatus.NotFunded);
         loanDetails[currentLoanID] = loanDetail;
         emit LoanRequested(currentLoanID);
         return loanID;
     }
 
     function depositToLoan(uint256 _loanID, uint128 _depositAmount) external payable {
-         require(_depositAmount > 0, "Deposit amount must be greater than zero.");
-         LoanDetail memory loanDetail = loanDetails[_loanID];
-         require(loanDetail.loanID > 0, "Loan not found.");
+        require(_depositAmount > 0, "Deposit amount must be greater than zero.");
+        LoanDetail memory loanDetail = loanDetails[_loanID];
+        require(loanDetail.loanID > 0, "Loan not found.");
+
+        loanDetail.amountDeposited = loanDetail.amountDeposited + _depositAmount;
+        // TODO: address total amount accumulated
+        if (loanDetail.loanAmount > loanDetail.amountDeposited){
+            loanDetails[_loanID] = LoanDetail(
+                                          loanDetail.loanID,
+                                          0,
+                                          loanDetail.loanAmount,
+                                          loanDetail.amountDeposited,
+                                          loanDetail.amountRepaid,
+                                          loanDetail.interestRate,
+                                          loanDetail.borrowerAddress,
+                                          LoanStatus.PartiallyFunded);
+        } else if (loanDetail.amountDeposited >= loanDetail.loanAmount) {
+            loanDetails[_loanID] = LoanDetail(
+                                          loanDetail.loanID,
+                                          0,
+                                          loanDetail.loanAmount,
+                                          loanDetail.amountDeposited,
+                                          loanDetail.amountRepaid,
+                                          loanDetail.interestRate,
+                                          loanDetail.borrowerAddress,
+                                          LoanStatus.NeedsRepayment);
+        }
+
     }
 
     function createUniqueLoanLink() public {

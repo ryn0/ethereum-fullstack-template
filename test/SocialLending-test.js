@@ -11,6 +11,14 @@ const { ethers } = require("hardhat");
 // an async function.
 describe("SocialLending Contract", () => {
 
+  const LoanStatus = {
+    NotFunded: 0,
+    PartiallyFunded: 1,
+    NeedsRepayment: 2,
+    Repaid: 3,
+    FailedToRepayByDeadline: 4
+}
+
   let owner;
   let sender;
   let recipient1, addrs;
@@ -76,6 +84,28 @@ describe("SocialLending Contract", () => {
     await expect(
            SocialLendingContract.connect(owner).depositToLoan(0, 10000) 
     ).to.be.revertedWith("Loan not found.");
+  });
+
+  it("Should update loan details to PartiallyFunded when less than total is deposited", async function () {
+    await SocialLendingContract.connect(sender).createLoan(10000);
+    await SocialLendingContract.connect(owner).depositToLoan(1, 100);
+    let loanDetails = await SocialLendingContract.connect(owner).loanDetails(1);
+    expect(loanDetails.loanStatus).to.equal(LoanStatus.PartiallyFunded)
+  });
+
+  it("Should update loan details to NeedsRepayment funded when requested amount is deposited in one deposit", async function () {
+    await SocialLendingContract.connect(sender).createLoan(10000);
+    await SocialLendingContract.connect(owner).depositToLoan(1, 10000);
+    let loanDetails = await SocialLendingContract.connect(owner).loanDetails(1);
+    expect(loanDetails.loanStatus).to.equal(LoanStatus.NeedsRepayment)
+  });
+
+  it("Should update loan details to NeedsRepayment funded when requested amount is deposited in multiple deposits", async function () {
+    await SocialLendingContract.connect(sender).createLoan(10000);
+    await SocialLendingContract.connect(owner).depositToLoan(1, 5000);
+    await SocialLendingContract.connect(owner).depositToLoan(1, 5000);
+    let loanDetails = await SocialLendingContract.connect(owner).loanDetails(1);
+    expect(loanDetails.loanStatus).to.equal(LoanStatus.NeedsRepayment)
   });
 
   // it("Should be able to retrieve a created loan", async function () {
