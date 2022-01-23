@@ -3,6 +3,8 @@ pragma solidity ^0.8.0;
 
 contract SocialLending {
 
+    address public owner;
+
     // ETH borrower address -> loanID
     mapping (address => uint) public borrowers;
 
@@ -29,6 +31,9 @@ contract SocialLending {
         uint256 backerInterestEarned;
     }
 
+    constructor() {
+        owner  = msg.sender;
+    }
 
     function requestLoan() public {
 /* The borrower connects to the dapp with his wallet
@@ -39,8 +44,7 @@ contract SocialLending {
 */
     }
 
-
-    function createLoanId() public returns (uint) {
+    function createLoanId() external payable returns (uint loanID) {
 /* A function that creates a unique loan ID from hashing the borrower’s ethereum address, loan amount and tenor, and timestamp?*/
     }
 
