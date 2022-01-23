@@ -72,10 +72,16 @@ contract SocialLending {
         uint256 currentLoanID = loanIDCounter.current();
 
         // note: The loan would start once the loan amount requested is met
-        LoanDetail memory loanDetail = LoanDetail(currentLoanID, 0, _loanAmount, interestRate,  msg.sender, LoanStatus.NotFunded);
+        LoanDetail memory loanDetail = LoanDetail(currentLoanID, 0, _loanAmount, interestRate, msg.sender, LoanStatus.NotFunded);
         loanDetails[currentLoanID] = loanDetail;
         emit LoanRequested(currentLoanID);
         return loanID;
+    }
+
+    function depositToLoan(uint256 _loanID, uint128 _depositAmount) external payable {
+         require(_depositAmount > 0, "Deposit amount must be greater than zero.");
+         LoanDetail memory loanDetail = loanDetails[_loanID];
+         require(loanDetail.loanID > 0, "Loan not found.");
     }
 
     function createUniqueLoanLink() public {
@@ -92,12 +98,7 @@ contract SocialLending {
 */
     }
 
-    function backerCommits() public {
-/* The backer confirms the amount of ETH he is willing to commit
-    The backer is shown his share of the total funding pool, the expected daily yield, and terms that this is value at risk if the borrower defaults
-The backer agrees to the terms and transfers funds to the smart contract
-*/
-    }
+
 
     function loanBackingSecured() public {
 /* Checks if loan requested = sum (backerAmount) for all backerAddresses tagged to the specific loanID. If yes, return true to go to the disbursal phase. If no, the loan needs to be in wait mode.    
