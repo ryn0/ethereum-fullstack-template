@@ -6,6 +6,8 @@ contract SocialLending {
     address public owner;
     uint8 interestRate = 7; // TODO: this needs to be a percentage, might need to use a library because we can't use decimals
 
+    event LoanRequested(uint loanID, LoanDetail loanDetails);
+
     // ETH borrower address -> loanID (note: assumes only 1 loan per address)
     mapping (address => uint) public borrowers;
 
@@ -17,14 +19,14 @@ contract SocialLending {
 
     struct LoanDetail {
         uint256 loanID;
-        uint8 tenor;
+        uint tenor;
         uint128 amount;
         uint8 interestRate;
         address borrowerAddress;
         address[] loanBackers;
-        uint256 protocolFees;
+        // uint256 protocolFees; // TODO: don't think about this until everything else is implemented
         LoanStatus loanStatus;
-	}
+    }
 
     struct LoanBacker {
         address backerAddress;
@@ -55,12 +57,16 @@ contract SocialLending {
 */
     }
 
-    // Creates a loan ID for a given borrower. The loan would start once the loan amount requested is met.
     function createLoanId(
         address borrower,
         uint256 loanAmount
     ) external payable returns (uint loanID) {
-        // TODO: implement 
+        // TODO: create a new LoanDetail which will default the loan to the NotFunded status
+
+        // note: The loan would start once the loan amount requested is met
+        
+        //let loanDetail = LoanDetail(loanID, tenor, amount, interestRate, borrowerAddress, loanBackers, LoanStatus.NotFunded);
+        //LoanRequested()
     }
 
     function createUniqueLoanLink() public {
