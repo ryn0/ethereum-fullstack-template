@@ -30,12 +30,14 @@ describe("SocialLending Contract", () => {
     it("Should set the right owner", async function () {
       expect(await SocialLendingContract.owner()).to.equal(owner.address);
     });
+  });
 
-    it("Should only allow valid loan amounts", async function () {
+    describe("Create Loan", function () {
+
+      it("Should only allow valid loan amounts", async function () {
         await expect(
             SocialLendingContract.connect(owner).createLoan(0)
         ).to.be.revertedWith("Loan amount must be greater than zero.");
-
     });
 
     it("Should emit LoanRequested event when loan is created", async function () {
