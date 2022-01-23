@@ -10,9 +10,9 @@ contract SocialLending {
     mapping (uint => LoanDetail) public loanDetails;
 
     // loanID -> loan backers
-    mapping (uint => LoanBackers[]) public loanBackers;
+    mapping (uint => LoanBacker[]) public loanBackers;
 
- 	struct LoanDetail {
+    struct LoanDetail {
         uint256 loanID;
         uint8 tenor;
         uint128 amount;
@@ -22,7 +22,7 @@ contract SocialLending {
         uint256 protocolFees;
 	}
 
-    struct LoanBackers {
+    struct LoanBacker {
         address backerAddress;
         uint256 backerAmount;
         uint256 borrowerInterestDue;
