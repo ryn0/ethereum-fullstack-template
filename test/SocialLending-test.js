@@ -15,7 +15,6 @@ describe("SocialLending Contract", () => {
   let sender;
   let recipient1, addrs;
 
-
   beforeEach(async () => {
     // Get the ContractFactory and Signers here.
     SocialLending = await ethers.getContractFactory("SocialLending");

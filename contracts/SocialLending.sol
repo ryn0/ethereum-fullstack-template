@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 contract SocialLending {
 
     address public owner;
+    uint8 interestRate = 7; // TODO: this needs to be a percentage, might need to use a library because we can't use decimals
 
     // ETH borrower address -> loanID
     mapping (address => uint) public borrowers;
@@ -44,8 +45,12 @@ contract SocialLending {
 */
     }
 
-    function createLoanId() external payable returns (uint loanID) {
-/* A function that creates a unique loan ID from hashing the borrower’s ethereum address, loan amount and tenor, and timestamp?*/
+    // Creates a loan ID for a given borrower. The loan would start once the loan amount requested is met.
+    function createLoanId(
+        address borrower,
+        uint256 loanAmount
+    ) external payable returns (uint loanID) {
+        // TODO: implement 
     }
 
     function createUniqueLoanLink() public {
