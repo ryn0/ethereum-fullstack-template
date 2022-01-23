@@ -1,7 +1,11 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
+
 contract SocialLending {
+    using Counters for Counters.Counter;
 
     address public owner;
     uint8 interestRate = 7; // TODO: this needs to be a percentage, might need to use a library because we can't use decimals
@@ -16,6 +20,8 @@ contract SocialLending {
 
     // loanID -> loan backers (note: gets all of the backers for a given loanID)
     mapping (uint => LoanBacker[]) public loanBackers;
+
+    Counters.Counter public loanIDCounter;
 
     struct LoanDetail {
         uint256 loanID;
@@ -37,11 +43,11 @@ contract SocialLending {
 
     enum LoanStatus {
         NotFunded,
-        NotFullyFunded,
+        PartiallyFunded,
         Funded,
         NeedsRepayment,
         Repaid,
-        FailedToRepay
+        FailedToRepayByDeadline
     }
 
     constructor() {
@@ -62,6 +68,9 @@ contract SocialLending {
     ) external payable returns (uint loanID) {
         require(loanAmount > 0, "Loan amount must be greater than zero.");
 
+        loanIDCounter.increment();    
+        uint256 currentLoanID = loanIDCounter.current();
+
         // note: the borrower would be: msg.sender - I think
 
         // TODO: create a new LoanDetail which will default the loan to the NotFunded status
@@ -70,6 +79,7 @@ contract SocialLending {
         
         //let loanDetail = LoanDetail(loanID, tenor, amount, interestRate, borrowerAddress, loanBackers, LoanStatus.NotFunded);
         //LoanRequested()
+        return currentLoanID;
     }
 
     function createUniqueLoanLink() public {

@@ -36,6 +36,7 @@
   "homepage": "https://github.com/ryn0/ethereum-fullstack-template#readme",
   "dependencies": {
     "@nomiclabs/hardhat-waffle": "^2.0.2",
+    "@openzeppelin/contracts": "^4.2.0",
     "hardhat": "^2.8.3"
   },
   "devDependencies": {
