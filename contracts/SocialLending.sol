@@ -58,12 +58,12 @@ contract SocialLending {
 /* The borrower connects to the dapp with his wallet
     The borrower specifies the terms of the loan he wants - amount and tenor
     Specifies the ethereum address of the backers
-   Calls function CreateLoanID()
+   Calls function createLoan()
    Calls a function to create a unique link that can be shared with the backer 
 */
     }
 
-    function createLoanId(
+    function createLoan(
         uint128 _loanAmount
     ) external payable returns (uint loanID) {
         require(_loanAmount > 0, "Loan amount must be greater than zero.");

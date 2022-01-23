@@ -33,28 +33,28 @@ describe("SocialLending Contract", () => {
 
     it("Should only allow valid loan amounts", async function () {
         await expect(
-            SocialLendingContract.connect(owner).createLoanId(0)
+            SocialLendingContract.connect(owner).createLoan(0)
         ).to.be.revertedWith("Loan amount must be greater than zero.");
 
       });
 
       it("Should emit LoanRequested event when loan is created", async function () {
         await expect(
-          SocialLendingContract.connect(sender).createLoanId(1000)
+          SocialLendingContract.connect(sender).createLoan(1000)
         ).to.emit(SocialLendingContract, "LoanRequested")
         .withArgs(1);
       });
 
       it("Should should get back correct loan values for first loan if one is created", async function () {
-        await SocialLendingContract.connect(sender).createLoanId(1000);
+        await SocialLendingContract.connect(sender).createLoan(1000);
         let loanDetails = await SocialLendingContract.loanDetails(1);
       
         expect(loanDetails.loanID).to.equal(1) && expect(loanDetails.loanAmount).to.equal(1000);
     });
 
       it("Should should get back correct loan values for second loan if two are created", async function () {
-        await SocialLendingContract.connect(sender).createLoanId(1000);
-        await SocialLendingContract.connect(sender).createLoanId(10000);
+        await SocialLendingContract.connect(sender).createLoan(1000);
+        await SocialLendingContract.connect(sender).createLoan(10000);
         let loanDetails2 = await SocialLendingContract.loanDetails(2);
       
         expect(loanDetails2.loanID).to.equal(2) && expect(loanDetails2.loanAmount).to.equal(10000);
