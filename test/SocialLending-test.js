@@ -38,10 +38,19 @@ describe("SocialLending Contract", () => {
 
       });
 
-      it("Should increment loan ID by 1", async function () {
+      it("Should emit LoanRequested event when loan is created", async function () {
         await expect(
-        console.log( await  SocialLendingContract.connect(owner).createLoanId(100))).to.equal(0)
+          SocialLendingContract.connect(sender).createLoanId(1000)
+        ).to.emit(SocialLendingContract, "LoanRequested")
+        .withArgs(1);
       });
+
+      // it("Should increment loan ID by 1", async function () {
+      //   await expect(
+      //   console.log( await  SocialLendingContract.connect(owner).createLoanId(100))).to.equal(0)
+      // });
+
+
 
       // it("Should increment loan ID by 1", async function () {
       //   await expect(

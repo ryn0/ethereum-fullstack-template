@@ -10,13 +10,13 @@ contract SocialLending {
     address public owner;
     uint8 interestRate = 7; // TODO: this needs to be a percentage, might need to use a library because we can't use decimals
 
-    event LoanRequested(uint loanID, LoanDetail loanDetails);
+    event LoanRequested(uint loanID);
 
     // ETH borrower address -> loanID (note: assumes only 1 loan per address)
     mapping (address => uint) public borrowers;
 
     // loanID -> loan details (note: gets the details of a loan for a given loanID)
-    mapping (uint => LoanDetail) public loanDetails;
+     mapping (uint => LoanDetail) public loanDetails;
 
     // loanID -> loan backers (note: gets all of the backers for a given loanID)
     mapping (uint => LoanBacker[]) public loanBackers;
@@ -72,9 +72,9 @@ contract SocialLending {
         uint256 currentLoanID = loanIDCounter.current();
 
         // note: The loan would start once the loan amount requested is met
-        
-        loanDetails[currentLoanID] = LoanDetail(currentLoanID, 0, loanAmount, interestRate,  msg.sender, LoanStatus.NotFunded);
-        //LoanRequested()
+        LoanDetail memory loanDetail = LoanDetail(currentLoanID, 0, loanAmount, interestRate,  msg.sender, LoanStatus.NotFunded);
+        loanDetails[currentLoanID] = loanDetail;
+        emit LoanRequested(currentLoanID);
         return 5;
     }
 
