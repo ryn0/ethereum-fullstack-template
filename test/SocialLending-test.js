@@ -45,19 +45,20 @@ describe("SocialLending Contract", () => {
         .withArgs(1);
       });
 
+      it("Should should get back correct loan values for first loan if one is created", async function () {
+        await SocialLendingContract.connect(sender).createLoanId(1000);
+        let loanDetails = await SocialLendingContract.loanDetails(1);
+      
+        expect(loanDetails.loanID).to.equal(1) && expect(loanDetails.loanAmount).to.equal(1000);
+    });
 
-      // it("Should increment loan ID by 1", async function () {
-      //   await expect(
-
- 
-      //     console.log(await SocialLendingContract.connect(owner).createLoanId(100)))
-      //       // SocialLendingContract.connect(owner).createLoanId(100).then(function (x) {
-      //       //   console.log(x);
-      //       // }))
-      //   //).to.be.revertedWith("Loan amount must be greater than zero.");
-
-      // });
-
+      it("Should should get back correct loan values for second loan if two are created", async function () {
+        await SocialLendingContract.connect(sender).createLoanId(1000);
+        await SocialLendingContract.connect(sender).createLoanId(10000);
+        let loanDetails2 = await SocialLendingContract.loanDetails(2);
+      
+        expect(loanDetails2.loanID).to.equal(2) && expect(loanDetails2.loanAmount).to.equal(10000);
+    });
   });
 
 });
