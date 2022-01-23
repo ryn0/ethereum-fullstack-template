@@ -6,13 +6,13 @@ contract SocialLending {
     address public owner;
     uint8 interestRate = 7; // TODO: this needs to be a percentage, might need to use a library because we can't use decimals
 
-    // ETH borrower address -> loanID
+    // ETH borrower address -> loanID (note: assumes only 1 loan per address)
     mapping (address => uint) public borrowers;
 
-    // loanID -> loan details
+    // loanID -> loan details (note: gets the details of a loan for a given loanID)
     mapping (uint => LoanDetail) public loanDetails;
 
-    // loanID -> loan backers
+    // loanID -> loan backers (note: gets all of the backers for a given loanID)
     mapping (uint => LoanBacker[]) public loanBackers;
 
     struct LoanDetail {
@@ -23,6 +23,7 @@ contract SocialLending {
         address borrowerAddress;
         address[] loanBackers;
         uint256 protocolFees;
+        LoanStatus loanStatus;
 	}
 
     struct LoanBacker {
@@ -30,6 +31,15 @@ contract SocialLending {
         uint256 backerAmount;
         uint256 borrowerInterestDue;
         uint256 backerInterestEarned;
+    }
+
+    enum LoanStatus {
+        NotFunded,
+        NotFullyFunded,
+        Funded,
+        NeedsRepayment,
+        Repaid,
+        FailedToRepay
     }
 
     constructor() {
