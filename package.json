@@ -26,14 +26,16 @@
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ryn0/ethereum-fullstack-template.git"
   },
   "author": "",
-  "homepage": "https://github.com/ryn0/ethereum-fullstack-template#readme",
+  "homepage": "https://ryn0.github.io",
   "dependencies": {
     "@nomiclabs/hardhat-waffle": "^2.0.2",
     "@openzeppelin/contracts": "^4.2.0",
