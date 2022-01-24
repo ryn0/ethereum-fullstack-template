@@ -101,7 +101,7 @@ describe("SocialLending Contract", () => {
       expect(loanDetails.loanStatus).to.equal(LoanStatus.PartiallyFunded)
     });
 
-    it("Should update loan details to NeedsRepayment funded when requested amount is deposited in one deposit", async function () {
+    it("Should update loan details to NeedsRepayment when requested amount is deposited in one deposit", async function () {
       await SocialLendingContract.connect(sender).createLoan(10000);
       await SocialLendingContract.connect(owner).depositToLoan(1, 10000);
       let loanDetails = await SocialLendingContract.connect(owner).loanDetails(1);
@@ -109,7 +109,7 @@ describe("SocialLending Contract", () => {
       expect(loanDetails.loanStatus).to.equal(LoanStatus.NeedsRepayment)
     });
 
-    it("Should update loan details to NeedsRepayment funded when requested amount is deposited in multiple deposits", async function () {
+    it("Should update loan details to NeedsRepayment when requested amount is deposited in multiple deposits", async function () {
       await SocialLendingContract.connect(sender).createLoan(10000);
       await SocialLendingContract.connect(owner).depositToLoan(1, 5000);
       await SocialLendingContract.connect(owner).depositToLoan(1, 5000);
