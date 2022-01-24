@@ -122,7 +122,6 @@ describe("SocialLending Contract", () => {
       await SocialLendingContract.connect(sender).createLoan(10000);
       await SocialLendingContract.connect(owner).depositToLoan(1, 10000);
       let loanDetails = await SocialLendingContract.connect(owner).loanDetails(1);
-      const today = new Date();
       const expectedLoanRepaymentDateMin = new Date();
       expectedLoanRepaymentDateMin.setDate(today.getDate() + 89);
       const expectedLoanRepaymentDateMax = new Date();
