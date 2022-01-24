@@ -127,6 +127,14 @@ describe("SocialLending Contract", () => {
                                  greaterThan(expectedLoanRepaymentDateMin)
   });
 
+  it("Should emit LoanNeedsRepayment event when loan has requested funds", async function () {
+    await SocialLendingContract.connect(sender).createLoan(1000);
+    await expect(
+      SocialLendingContract.connect(owner).depositToLoan(1, 1000)
+    ).to.emit(SocialLendingContract, "LoanNeedsRepayment")
+    .withArgs(1);
+});
+
   // it("Should be able to retrieve a created loan", async function () {
   //   await SocialLendingContract.connect(sender).createLoan(10000);
   //   await expect(
