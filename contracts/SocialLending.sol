@@ -158,6 +158,8 @@ contract SocialLending {
                                           loanDetail.borrowerAddress,
                                           loanDetail.loanAmountWithInterest,
                                           LoanStatus.Repaid);
+
+            // TODO: remove the borrower address from the mapping so they could get another loan                              
             emit LoanRepaid(loanDetail.loanID);
         } else {
             revert("Something went wrong, amount repaid is unexpected.");
