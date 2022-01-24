@@ -13,6 +13,7 @@ contract SocialLending {
     
     event LoanRequested(uint loanID);
     event LoanNeedsRepayment(uint loanID);
+    event LenderAdded(uint loanID);
 
     // ETH borrower address -> loanID (note: assumes only 1 loan per address)
     mapping (address => uint) public borrowers;
@@ -20,8 +21,8 @@ contract SocialLending {
     // loanID -> loan details (note: gets the details of a loan for a given loanID)
     mapping (uint => LoanDetail) public loanDetails;
 
-    // loanID -> loan backers (note: gets all of the backers for a given loanID)
-    mapping (uint => LoanBacker[]) public loanBackers;
+    // loanID -> loan backers (note: gets all of the lenders for a given loanID)
+    mapping (uint => Lender[]) public lenders;
 
     Counters.Counter public loanIDCounter;
 
@@ -33,16 +34,14 @@ contract SocialLending {
         uint128 amountRepaid;
         uint8 interestRate;
         address borrowerAddress;
-        // address[] loanBackers; // TODO: not sure how to store this, will need to map from loan to loan backers somehow
-        // uint256 protocolFees; // TODO: don't think about this until everything else is implemented
         LoanStatus loanStatus;
     }
 
-    struct LoanBacker {
-        address backerAddress;
-        uint256 backerAmount;
-        uint256 borrowerInterestDue;
-        uint256 backerInterestEarned;
+    struct Lender {
+        address lenderAddress;
+        uint128 depositAmount;
+        bool isRepaid;
+        uint128 amountToRepay;
     }
 
     enum LoanStatus {
@@ -88,8 +87,9 @@ contract SocialLending {
         require(loanDetail.loanID > 0, "Loan not found.");
         loanDetail.amountDeposited += _depositAmount;
 
-        // TODO: add the backer/lender to a list and determine how to deal with more than 1 deposit by address
-
+        // TODO: caculate the amount which should be repaid to the lender, here we are just setting the amount to the deposit
+        lenders[loanDetail.loanID].push(Lender(msg.sender, _depositAmount, false, _depositAmount));
+        
         if (loanDetail.loanAmount > loanDetail.amountDeposited){
             loanDetails[_loanID] = LoanDetail(
                                           loanDetail.loanID,

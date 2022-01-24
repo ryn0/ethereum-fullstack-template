@@ -21,16 +21,18 @@ describe("SocialLending Contract", () => {
 
   let owner;
   let sender;
-  let recipient1, addrs;
   let borrower1, borrower2;
+  let lender1, lender2;
 
   beforeEach(async () => {
     // Get the ContractFactory and Signers here.
     SocialLending = await ethers.getContractFactory("SocialLending", accounts => {
        borrower1 = accounts[0];
        borrower2 = accounts[1];
+       lender1 = accounts[2];
+       lender2 = accounts[3];
     });
-    [owner, sender, recipient1, recipient2, borrower1, borrower2, ...addrs] = await ethers.getSigners();
+    [owner, sender, recipient1, recipient2, borrower1, borrower2, lender1, lender2] = await ethers.getSigners();
 
     SocialLendingContract = await SocialLending.deploy();
 
@@ -75,7 +77,7 @@ describe("SocialLending Contract", () => {
     });    
 
     it("Should get back correct loan values for first loan if one is created", async function () {
-        await SocialLendingContract.connect(sender).createLoan(1000);
+        await SocialLendingContract.connect(borrower1).createLoan(1000);
         let loanDetails = await SocialLendingContract.loanDetails(1);
       
         expect(loanDetails.loanID).to.equal(1) && expect(loanDetails.loanAmount).to.equal(1000);
@@ -90,7 +92,7 @@ describe("SocialLending Contract", () => {
     });
 
     it("Should have a loan status of New after initially created", async function () {
-      await SocialLendingContract.connect(sender).createLoan(1000);
+      await SocialLendingContract.connect(borrower1).createLoan(1000);
       let loanDetails = await SocialLendingContract.loanDetails(1);
     
       expect(loanDetails.loanStatus).to.equal(LoanStatus.New);
@@ -100,46 +102,57 @@ describe("SocialLending Contract", () => {
   describe("Deposit To Loan", function () {
 
     it("Should only allow valid deposit amounts", async function () {
-      await SocialLendingContract.connect(sender).createLoan(10000);
+      await SocialLendingContract.connect(borrower1).createLoan(10000);
       await expect(
-          SocialLendingContract.connect(owner).depositToLoan(0, 0)
+          SocialLendingContract.connect(lender1).depositToLoan(0, 0)
       ).to.be.revertedWith("Deposit amount must be greater than zero.");
     });
 
     it("Should only allow deposits to an existing loan", async function () {
       await expect(
-           SocialLendingContract.connect(owner).depositToLoan(0, 10000) 
+           SocialLendingContract.connect(lender1).depositToLoan(0, 10000) 
       ).to.be.revertedWith("Loan not found.");
     });
 
     it("Should update loan details to PartiallyFunded when less than total amount requested is deposited", async function () {
-      await SocialLendingContract.connect(sender).createLoan(10000);
-      await SocialLendingContract.connect(owner).depositToLoan(1, 100);
+      await SocialLendingContract.connect(borrower1).createLoan(10000);
+      await SocialLendingContract.connect(lender1).depositToLoan(1, 100);
       let loanDetails = await SocialLendingContract.connect(owner).loanDetails(1);
     
       expect(loanDetails.loanStatus).to.equal(LoanStatus.PartiallyFunded)
     });
 
     it("Should update loan details to NeedsRepayment when requested amount is deposited in one deposit", async function () {
-      await SocialLendingContract.connect(sender).createLoan(10000);
-      await SocialLendingContract.connect(owner).depositToLoan(1, 10000);
+      await SocialLendingContract.connect(borrower1).createLoan(10000);
+      await SocialLendingContract.connect(lender1).depositToLoan(1, 10000);
       let loanDetails = await SocialLendingContract.connect(owner).loanDetails(1);
     
       expect(loanDetails.loanStatus).to.equal(LoanStatus.NeedsRepayment)
     });
 
     it("Should update loan details to NeedsRepayment when requested amount is deposited in multiple deposits", async function () {
-      await SocialLendingContract.connect(sender).createLoan(10000);
-      await SocialLendingContract.connect(owner).depositToLoan(1, 5000);
-      await SocialLendingContract.connect(owner).depositToLoan(1, 5000);
+      await SocialLendingContract.connect(borrower1).createLoan(10000);
+      await SocialLendingContract.connect(lender1).depositToLoan(1, 5000);
+      await SocialLendingContract.connect(lender2).depositToLoan(1, 5000);
       let loanDetails = await SocialLendingContract.connect(owner).loanDetails(1);
     
       expect(loanDetails.loanStatus).to.equal(LoanStatus.NeedsRepayment)
     });
 
+    // it("Should have the ability to let different accounts fund loan", async function () {
+    //   let loanID = 1;
+    //   await SocialLendingContract.connect(borrower1).createLoan(10000);
+    //   await SocialLendingContract.connect(lender1).depositToLoan(loanID, 5000);
+    //   await SocialLendingContract.connect(lender2).depositToLoan(loanID, 5000);
+    //   //let loanDetails = await SocialLendingContract.connect(owner).loanDetails(loanID);
+    //   console.log(await SocialLendingContract.lenders(loanID));
+
+    //  // expect(loanDetails.loanStatus).to.equal(LoanStatus.NeedsRepayment)
+    // });
+
     it("Should set the tenor to 90 days in the future once loan has requested funds", async function () {
-      await SocialLendingContract.connect(sender).createLoan(10000);
-      await SocialLendingContract.connect(owner).depositToLoan(1, 10000);
+      await SocialLendingContract.connect(borrower1).createLoan(10000);
+      await SocialLendingContract.connect(lender1).depositToLoan(1, 10000);
       let loanDetails = await SocialLendingContract.connect(owner).loanDetails(1);
       var today = new Date();
       const expectedLoanRepaymentDateMin = new Date();
@@ -154,9 +167,9 @@ describe("SocialLending Contract", () => {
   });
 
   it("Should emit LoanNeedsRepayment event when loan has requested funds", async function () {
-    await SocialLendingContract.connect(sender).createLoan(1000);
+    await SocialLendingContract.connect(borrower1).createLoan(1000);
     await expect(
-      SocialLendingContract.connect(owner).depositToLoan(1, 1000)
+      SocialLendingContract.connect(lender1).depositToLoan(1, 1000)
     ).to.emit(SocialLendingContract, "LoanNeedsRepayment")
     .withArgs(1);
   });
