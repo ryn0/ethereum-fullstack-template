@@ -5,24 +5,24 @@ import { styled } from '@mui/material/styles';
 import Panel from './Panel';
 
 
-function Lend() {
+function Repay() {
   let params = useParams();
 
   const navigate = useNavigate();
   
   const buttonClick = () => {
-    
+
   };
 
   return (
     <Panel>
-      <Typography component="div" color="#1c3f71" fontSize="2rem"><h2>Lend</h2></Typography>
+      <Typography component="div" color="#1c3f71" fontSize="2rem"><h2>Repay</h2></Typography>
       
       <Box sx={{ flexGrow: 1 }}>
         <Grid container spacing={2}>
           <Grid item container xs={12} alignItems="center">
             <Grid item xs={6}>
-              <Typography component="p">Ethereum address to fund:</Typography>
+              <Typography component="p">Total amount of USDC loaned:</Typography>
             </Grid>
             <Grid item xs={6}>
               <TextField
@@ -34,7 +34,7 @@ function Lend() {
 
           <Grid item container xs={12} alignItems="center">
             <Grid item xs={6}>
-              <Typography>Total amount of USDC requested:</Typography>
+              <Typography>Total repayment of USDC:</Typography>
             </Grid>
             <Grid item xs={6}>
               <TextField
@@ -46,7 +46,7 @@ function Lend() {
 
           <Grid item container xs={12} alignItems="center">
             <Grid item xs={6}>
-              <Typography>Total amount of USDC remaining:</Typography>
+              <Typography>Total USDC still needed:</Typography>
             </Grid>
             <Grid item xs={6}>
               <TextField
@@ -58,7 +58,7 @@ function Lend() {
 
           <Grid item container xs={12} alignItems="center">
             <Grid item xs={6}>
-              <Typography>Interest rate:</Typography>
+              <Typography>Days to repay:</Typography>
             </Grid>
             <Grid item xs={6}>
               <TextField
@@ -85,4 +85,4 @@ function Lend() {
   );
 }
 
-export default Lend;
+export default Repay;

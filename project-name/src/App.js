@@ -21,6 +21,7 @@ function App() {
       
       <Box>
         <ButtonLinks text="REQUEST A LOAN" style={{ marginRight: '2rem' }} onClick={() => navigate('borrow')} />
+        {/* just for testing remove later */}
         <ButtonLinks text="LEND" onClick={() => navigate('lend/12345')} />
       </Box>
     </Panel>
