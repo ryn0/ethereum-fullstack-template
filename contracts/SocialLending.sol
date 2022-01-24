@@ -166,8 +166,8 @@ contract SocialLending {
         }
     }
 
-    function calculateLoanWithInterest(uint128 amount) private view returns (uint128) {
-        return ((amount * interestRate) / 10000) + amount;
+    function calculateLoanWithInterest(uint128 _amount) private view returns (uint128) {
+        return ((_amount * interestRate) / 10000) + _amount;
     }
 
     function requestLoan() public {
