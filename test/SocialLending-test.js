@@ -40,7 +40,7 @@ describe("SocialLending Contract", () => {
     });
   });
 
-    describe("Create Loan", function () {
+  describe("Create Loan", function () {
 
       it("Should only allow valid loan amounts", async function () {
         await expect(
@@ -78,47 +78,49 @@ describe("SocialLending Contract", () => {
       await expect(
           SocialLendingContract.connect(owner).depositToLoan(0, 0)
       ).to.be.revertedWith("Deposit amount must be greater than zero.");
-  });
+    });
 
-  it("Should only allow deposits to an existing loan", async function () {
-    await expect(
+    it("Should only allow deposits to an existing loan", async function () {
+      await expect(
            SocialLendingContract.connect(owner).depositToLoan(0, 10000) 
-    ).to.be.revertedWith("Loan not found.");
-  });
+      ).to.be.revertedWith("Loan not found.");
+    });
 
-  it("Should update loan details to PartiallyFunded when less than total is deposited", async function () {
-    await SocialLendingContract.connect(sender).createLoan(10000);
-    await SocialLendingContract.connect(owner).depositToLoan(1, 100);
-    let loanDetails = await SocialLendingContract.connect(owner).loanDetails(1);
-    expect(loanDetails.loanStatus).to.equal(LoanStatus.PartiallyFunded)
-  });
+    it("Should update loan details to PartiallyFunded when less than total is deposited", async function () {
+      await SocialLendingContract.connect(sender).createLoan(10000);
+      await SocialLendingContract.connect(owner).depositToLoan(1, 100);
+      let loanDetails = await SocialLendingContract.connect(owner).loanDetails(1);
+    
+      expect(loanDetails.loanStatus).to.equal(LoanStatus.PartiallyFunded)
+    });
 
-  it("Should update loan details to NeedsRepayment funded when requested amount is deposited in one deposit", async function () {
-    await SocialLendingContract.connect(sender).createLoan(10000);
-    await SocialLendingContract.connect(owner).depositToLoan(1, 10000);
-    let loanDetails = await SocialLendingContract.connect(owner).loanDetails(1);
-    expect(loanDetails.loanStatus).to.equal(LoanStatus.NeedsRepayment)
-  });
+    it("Should update loan details to NeedsRepayment funded when requested amount is deposited in one deposit", async function () {
+      await SocialLendingContract.connect(sender).createLoan(10000);
+      await SocialLendingContract.connect(owner).depositToLoan(1, 10000);
+      let loanDetails = await SocialLendingContract.connect(owner).loanDetails(1);
+    
+      expect(loanDetails.loanStatus).to.equal(LoanStatus.NeedsRepayment)
+    });
 
-  it("Should update loan details to NeedsRepayment funded when requested amount is deposited in multiple deposits", async function () {
-    await SocialLendingContract.connect(sender).createLoan(10000);
-    await SocialLendingContract.connect(owner).depositToLoan(1, 5000);
-    await SocialLendingContract.connect(owner).depositToLoan(1, 5000);
-    let loanDetails = await SocialLendingContract.connect(owner).loanDetails(1);
-    expect(loanDetails.loanStatus).to.equal(LoanStatus.NeedsRepayment)
-  });
+    it("Should update loan details to NeedsRepayment funded when requested amount is deposited in multiple deposits", async function () {
+      await SocialLendingContract.connect(sender).createLoan(10000);
+      await SocialLendingContract.connect(owner).depositToLoan(1, 5000);
+      await SocialLendingContract.connect(owner).depositToLoan(1, 5000);
+      let loanDetails = await SocialLendingContract.connect(owner).loanDetails(1);
+    
+      expect(loanDetails.loanStatus).to.equal(LoanStatus.NeedsRepayment)
+    });
 
-  it("Should set the tenor to 90 days in the future once loan has requested funds", async function () {
-    await SocialLendingContract.connect(sender).createLoan(10000);
-    await SocialLendingContract.connect(owner).depositToLoan(1, 10000);
-    let loanDetails = await SocialLendingContract.connect(owner).loanDetails(1);
-    const today = new Date();
-    const expectedLoanRepaymentDateMin = new Date();
-    expectedLoanRepaymentDateMin.setDate(today.getDate() + 89);
-    const expectedLoanRepaymentDateMax = new Date();
-    expectedLoanRepaymentDateMax.setDate(today.getDate() + 91);
-    var loanRepaymentDate = new Date(parseInt(loanDetails.tenor * 1000));
-    console.log(loanRepaymentDate);
+    it("Should set the tenor to 90 days in the future once loan has requested funds", async function () {
+      await SocialLendingContract.connect(sender).createLoan(10000);
+      await SocialLendingContract.connect(owner).depositToLoan(1, 10000);
+      let loanDetails = await SocialLendingContract.connect(owner).loanDetails(1);
+      const today = new Date();
+      const expectedLoanRepaymentDateMin = new Date();
+      expectedLoanRepaymentDateMin.setDate(today.getDate() + 89);
+      const expectedLoanRepaymentDateMax = new Date();
+      expectedLoanRepaymentDateMax.setDate(today.getDate() + 91);
+      var loanRepaymentDate = new Date(parseInt(loanDetails.tenor * 1000));
 
     // note: due to block.timestamp, we are just saying it's between 89 and 91 days
     expect(loanRepaymentDate).to.lessThan(expectedLoanRepaymentDateMax).and.
