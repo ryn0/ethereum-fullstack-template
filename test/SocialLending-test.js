@@ -76,6 +76,14 @@ describe("SocialLending Contract", () => {
       expect(borrower1.address).to.equal(loanDetails.borrowerAddress)
     });    
 
+    it("Should set interest rate to 7% more than the loan amount", async function () {
+      await SocialLendingContract.connect(borrower1).createLoan(10000);
+      let loanID = await SocialLendingContract.borrowers(borrower1.address);
+      let loanDetails = await SocialLendingContract.loanDetails(loanID);
+
+      expect(loanDetails.loanAmountWithInterest).to.equal(10700)
+    });  
+
     it("Should get back correct loan values for first loan if one is created", async function () {
         await SocialLendingContract.connect(borrower1).createLoan(1000);
         let loanDetails = await SocialLendingContract.loanDetails(1);
@@ -226,9 +234,7 @@ describe("Repay Loan", function () {
   it("Should set loan status to Repaid if amount repaid was what was due", async function () {
     await SocialLendingContract.connect(borrower1).createLoan(1000);
     await SocialLendingContract.connect(lender1).depositToLoan(1, 1000);
-
-    // NOTE: this assumes there was no interest on the loan right now
-    await SocialLendingContract.connect(borrower1).repayLoan(1, 1000);
+    await SocialLendingContract.connect(borrower1).repayLoan(1, 1070);
     let loanDetails = await SocialLendingContract.connect(borrower1).loanDetails(1);
   
     expect(loanDetails.loanStatus).to.equal(LoanStatus.Repaid)
@@ -238,9 +244,8 @@ describe("Repay Loan", function () {
     await SocialLendingContract.connect(borrower1).createLoan(1000);
     await SocialLendingContract.connect(lender1).depositToLoan(1, 1000);
 
-    // NOTE: this assumes there was no interest on the loan right now
     await expect(
-      SocialLendingContract.connect(borrower1).repayLoan(1, 1000)
+      SocialLendingContract.connect(borrower1).repayLoan(1, 1070)
     ).to.emit(SocialLendingContract, "LoanRepaid")
     .withArgs(1);
   });

@@ -8,7 +8,7 @@ contract SocialLending {
     using Counters for Counters.Counter;
 
     address public owner;
-    uint8 interestRate = 7; // TODO: this needs to be a percentage, might need to use a library because we can't use decimals
+    uint128 interestRate = 700; // 7.00%
     uint8 loanDurationInDays = 90;
     
     event LoanRequested(uint loanID);
@@ -33,7 +33,7 @@ contract SocialLending {
         uint128 loanAmount;
         uint128 amountDeposited;
         uint128 amountRepaid;
-        uint8 interestRate;
+        uint128 interestRate;
         address borrowerAddress;
         uint128 loanAmountWithInterest;
         LoanStatus loanStatus;
@@ -75,7 +75,7 @@ contract SocialLending {
                                             0,
                                             interestRate,
                                             msg.sender,
-                                            _loanAmount,// TODO: add interest to total
+                                            calculateLoanWithInterest(_loanAmount),
                                             LoanStatus.New);
         loanDetails[loanDetail.loanID] = loanDetail;
         borrowers[msg.sender] = loanDetail.loanID;
@@ -164,6 +164,10 @@ contract SocialLending {
         } else {
             revert("Something went wrong, amount repaid is unexpected.");
         }
+    }
+
+    function calculateLoanWithInterest(uint128 amount) private view returns (uint128) {
+        return ((amount * interestRate) / 10000) + amount;
     }
 
     function requestLoan() public {
