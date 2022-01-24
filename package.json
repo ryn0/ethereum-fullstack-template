@@ -35,7 +35,7 @@
     "url": "git+https://github.com/ryn0/ethereum-fullstack-template.git"
   },
   "author": "",
-  "homepage": "https://ryn0.github.io",
+  "homepage": "https://ryn0.github.io/ethereum-fullstack-template/project-name",
   "dependencies": {
     "@nomiclabs/hardhat-waffle": "^2.0.2",
     "@openzeppelin/contracts": "^4.2.0",
