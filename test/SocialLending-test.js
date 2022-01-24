@@ -32,7 +32,7 @@ describe("SocialLending Contract", () => {
        lender1 = accounts[2];
        lender2 = accounts[3];
     });
-    [owner, sender, recipient1, recipient2, borrower1, borrower2, lender1, lender2] = await ethers.getSigners();
+    [owner, sender, borrower1, borrower2, lender1, lender2] = await ethers.getSigners();
 
     SocialLendingContract = await SocialLending.deploy();
 
@@ -139,16 +139,30 @@ describe("SocialLending Contract", () => {
       expect(loanDetails.loanStatus).to.equal(LoanStatus.NeedsRepayment)
     });
 
-    // it("Should have the ability to let different accounts fund loan", async function () {
-    //   let loanID = 1;
-    //   await SocialLendingContract.connect(borrower1).createLoan(10000);
-    //   await SocialLendingContract.connect(lender1).depositToLoan(loanID, 5000);
-    //   await SocialLendingContract.connect(lender2).depositToLoan(loanID, 5000);
-    //   //let loanDetails = await SocialLendingContract.connect(owner).loanDetails(loanID);
-    //   console.log(await SocialLendingContract.lenders(loanID));
+    it("Should have the ability to let different accounts fund loan", async function () {
+      let loanID = 1;
 
-    //  // expect(loanDetails.loanStatus).to.equal(LoanStatus.NeedsRepayment)
-    // });
+      await SocialLendingContract.connect(borrower1).createLoan(10000);
+      await SocialLendingContract.connect(lender1).depositToLoan(loanID, 2500);
+      await SocialLendingContract.connect(lender2).depositToLoan(loanID, 7500);
+     
+      // TODO: find a way to loop through the array within a mapping without using a try/catch
+      var hasValue = true;
+      var i = 0;
+      do {
+        try {
+          await SocialLendingContract.lenders(loanID, i);
+          i++;
+      }
+      catch {
+        hasValue = false;
+      }
+
+      } while(hasValue);
+
+      expect(i).to.equal(2);
+
+    });
 
     it("Should set the tenor to 90 days in the future once loan has requested funds", async function () {
       await SocialLendingContract.connect(borrower1).createLoan(10000);
