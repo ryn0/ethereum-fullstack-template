@@ -46,7 +46,7 @@ contract SocialLending {
     }
 
     enum LoanStatus {
-        NotFunded,
+        New,
         PartiallyFunded,
         NeedsRepayment,
         Repaid,
@@ -72,7 +72,7 @@ contract SocialLending {
                                             0,
                                             interestRate,
                                             msg.sender,
-                                            LoanStatus.NotFunded);
+                                            LoanStatus.New);
         loanDetails[currentLoanID] = loanDetail;
         emit LoanRequested(currentLoanID);
         return loanID;

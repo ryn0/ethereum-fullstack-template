@@ -12,7 +12,7 @@ const { ethers } = require("hardhat");
 describe("SocialLending Contract", () => {
 
   const LoanStatus = {
-    NotFunded: 0,
+    New: 0,
     PartiallyFunded: 1,
     NeedsRepayment: 2,
     Repaid: 3,
@@ -55,20 +55,27 @@ describe("SocialLending Contract", () => {
         .withArgs(1);
     });
 
-    it("Should should get back correct loan values for first loan if one is created", async function () {
+    it("Should get back correct loan values for first loan if one is created", async function () {
         await SocialLendingContract.connect(sender).createLoan(1000);
         let loanDetails = await SocialLendingContract.loanDetails(1);
       
         expect(loanDetails.loanID).to.equal(1) && expect(loanDetails.loanAmount).to.equal(1000);
     });
 
-    it("Should should get back correct loan values for second loan if two are created", async function () {
+    it("Should get back correct loan values for second loan if two are created", async function () {
         await SocialLendingContract.connect(sender).createLoan(1000);
         await SocialLendingContract.connect(sender).createLoan(10000);
         let loanDetails2 = await SocialLendingContract.loanDetails(2);
       
         expect(loanDetails2.loanID).to.equal(2) && expect(loanDetails2.loanAmount).to.equal(10000);
     });
+
+    it("Should have an loan status of New after initial created", async function () {
+      await SocialLendingContract.connect(sender).createLoan(1000);
+      let loanDetails = await SocialLendingContract.loanDetails(1);
+    
+      expect(loanDetails.loanStatus).to.equal(LoanStatus.New);
+  });
   });
 
   describe("Deposit To Loan", function () {
