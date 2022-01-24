@@ -13,7 +13,8 @@ contract SocialLending {
     
     event LoanRequested(uint loanID);
     event LoanNeedsRepayment(uint loanID);
-    event LenderAdded(uint loanID);
+    event LenderDeposit(uint loanID, address lenderAddress);
+    event LoanRepaid(uint loanID);
 
     // ETH borrower address -> loanID (note: assumes only 1 loan per address)
     mapping (address => uint) public borrowers;
@@ -34,6 +35,7 @@ contract SocialLending {
         uint128 amountRepaid;
         uint8 interestRate;
         address borrowerAddress;
+        uint128 loanAmountWithInterest;
         LoanStatus loanStatus;
     }
 
@@ -73,6 +75,7 @@ contract SocialLending {
                                             0,
                                             interestRate,
                                             msg.sender,
+                                            _loanAmount,// TODO: add interest to total
                                             LoanStatus.New);
         loanDetails[loanDetail.loanID] = loanDetail;
         borrowers[msg.sender] = loanDetail.loanID;
@@ -91,7 +94,7 @@ contract SocialLending {
         lenders[loanDetail.loanID].push(Lender(msg.sender, _depositAmount, false, _depositAmount));
         
         if (loanDetail.loanAmount > loanDetail.amountDeposited){
-            loanDetails[_loanID] = LoanDetail(
+            loanDetails[loanDetail.loanID] = LoanDetail(
                                           loanDetail.loanID,
                                           loanDetail.tenor,
                                           loanDetail.loanAmount,
@@ -99,6 +102,7 @@ contract SocialLending {
                                           loanDetail.amountRepaid,
                                           loanDetail.interestRate,
                                           loanDetail.borrowerAddress,
+                                          loanDetail.loanAmountWithInterest,
                                           LoanStatus.PartiallyFunded);
         } else if (loanDetail.amountDeposited >= loanDetail.loanAmount) {
 
@@ -107,7 +111,7 @@ contract SocialLending {
                 how fees work right now so just allow any amount greater to or
                 equal to the amount requested
             */
-            loanDetails[_loanID] = LoanDetail(
+            loanDetails[loanDetail.loanID] = LoanDetail(
                                           loanDetail.loanID,
                                           (block.timestamp + loanDurationInDays * 1 days),
                                           loanDetail.loanAmount,
@@ -115,10 +119,48 @@ contract SocialLending {
                                           loanDetail.amountRepaid,
                                           loanDetail.interestRate,
                                           loanDetail.borrowerAddress,
+                                          loanDetail.loanAmountWithInterest,
                                           LoanStatus.NeedsRepayment);
-            emit LoanNeedsRepayment(_loanID);
+            emit LoanNeedsRepayment(loanDetail.loanID);
         } else {
             revert("Something went wrong, amount deposited is unexpected.");
+        }
+
+        emit LenderDeposit(loanDetail.loanID, msg.sender);
+    }
+
+    function repayLoan(uint256 _loanID, uint128 _repaymentAmount) external payable {
+        require(_repaymentAmount > 0, "Repayment amount must be greater than zero.");
+        LoanDetail memory loanDetail = loanDetails[_loanID];
+        require(loanDetail.loanID > 0, "Loan not found.");
+
+        loanDetail.amountRepaid += _repaymentAmount;
+
+        if (loanDetail.loanAmountWithInterest > loanDetail.amountRepaid){
+            loanDetails[_loanID] = LoanDetail(
+                                          loanDetail.loanID,
+                                          loanDetail.tenor,
+                                          loanDetail.loanAmount,
+                                          loanDetail.amountDeposited,
+                                          loanDetail.amountRepaid,
+                                          loanDetail.interestRate,
+                                          loanDetail.borrowerAddress,
+                                          loanDetail.loanAmountWithInterest,
+                                          LoanStatus.NeedsRepayment);
+        } else if (loanDetail.loanAmountWithInterest >= loanDetail.amountRepaid) {
+            loanDetails[_loanID] = LoanDetail(
+                                          loanDetail.loanID,
+                                          loanDetail.tenor,
+                                          loanDetail.loanAmount,
+                                          loanDetail.amountDeposited,
+                                          loanDetail.amountRepaid,
+                                          loanDetail.interestRate,
+                                          loanDetail.borrowerAddress,
+                                          loanDetail.loanAmountWithInterest,
+                                          LoanStatus.Repaid);
+            emit LoanRepaid(loanDetail.loanID);
+        } else {
+            revert("Something went wrong, amount repaid is unexpected.");
         }
     }
 
@@ -137,39 +179,11 @@ contract SocialLending {
 */
     }
 
-    function inviteBackers() public {
-/* The backer connects to the dapp with his wallet
-    The backer is shown the shortfall amount of the loan needed for the borrower
-
-   Calls function BackersCommit()
-  
-*/
-    }
-
-
-
-    function loanBackingSecured() public {
-/* Checks if loan requested = sum (backerAmount) for all backerAddresses tagged to the specific loanID. If yes, return true to go to the disbursal phase. If no, the loan needs to be in wait mode.    
-*/
-    }
-
     function disburseLoan() public {
 /* This function is to be called when LoanBackingSecured() returns true. 
    Loan amount is transferred from backers to the borrower.
    Calls LoanRunning() function to calculate and post daily yields (only in accounting data, no transfer of funds)
 borrowerInterestDue and backerInterestEarned updated daily
 */
-    }
-
-        function repayLoan() public {
-
-/* Anytime on or before the due date of the loan, the borrower can choose to repay the loan. Call this function.
-Transfer loan amount from borrower’s wallet to internal variable.
-Allocate funds equal to/in proportion to the original funding from the backers. 
-Recover interest due from the borrower’s wallet.
-Allocate interest earned in proportion to the backer’s funding share. A fraction goes to the protocol fees.
-
-*/
-
     }
 }

@@ -179,6 +179,14 @@ describe("SocialLending Contract", () => {
                                  greaterThan(expectedLoanRepaymentDateMin)
   });
 
+  it("Should emit LenderDeposit event when a lender deposits", async function () {
+    await SocialLendingContract.connect(borrower1).createLoan(1000);
+    await expect(
+      SocialLendingContract.connect(sender).depositToLoan(1, 1000)
+    ).to.emit(SocialLendingContract, "LenderDeposit")
+    .withArgs(1, sender.address);
+});
+
   it("Should emit LoanNeedsRepayment event when loan has requested funds", async function () {
     await SocialLendingContract.connect(borrower1).createLoan(1000);
     await expect(
@@ -187,6 +195,55 @@ describe("SocialLending Contract", () => {
     .withArgs(1);
   });
 
+});
+
+
+describe("Repay Loan", function () {
+
+  it("Should only allow valid repayment amounts", async function () {
+    await SocialLendingContract.connect(borrower1).createLoan(10000);
+    await SocialLendingContract.connect(lender1).depositToLoan(1, 10000)
+    await expect(
+      SocialLendingContract.connect(borrower1).repayLoan(1, 0)
+    ).to.be.revertedWith("Repayment amount must be greater than zero.");
+  });
+
+  it("Should only allow repayment to an existing loan", async function () {
+    await expect(
+         SocialLendingContract.connect(lender1).repayLoan(0, 10000) 
+    ).to.be.revertedWith("Loan not found.");
+  });
+
+  it("Should keep loan status as NeedsRepayment if amount repaid is less than the amount to repay", async function () {
+    await SocialLendingContract.connect(borrower1).createLoan(1000);
+    await SocialLendingContract.connect(lender1).depositToLoan(1, 1000);
+    await SocialLendingContract.connect(borrower1).repayLoan(1, 500);
+    let loanDetails = await SocialLendingContract.connect(borrower1).loanDetails(1);
+  
+    expect(loanDetails.loanStatus).to.equal(LoanStatus.NeedsRepayment)
+  });
+
+  it("Should set loan status to Repaid if amount repaid was what was due", async function () {
+    await SocialLendingContract.connect(borrower1).createLoan(1000);
+    await SocialLendingContract.connect(lender1).depositToLoan(1, 1000);
+
+    // NOTE: this assumes there was no interest on the loan right now
+    await SocialLendingContract.connect(borrower1).repayLoan(1, 1000);
+    let loanDetails = await SocialLendingContract.connect(borrower1).loanDetails(1);
+  
+    expect(loanDetails.loanStatus).to.equal(LoanStatus.Repaid)
+  });
+
+  it("Should emit event that loan was repaid if it was paid back fully", async function () {
+    await SocialLendingContract.connect(borrower1).createLoan(1000);
+    await SocialLendingContract.connect(lender1).depositToLoan(1, 1000);
+
+    // NOTE: this assumes there was no interest on the loan right now
+    await expect(
+      SocialLendingContract.connect(borrower1).repayLoan(1, 1000)
+    ).to.emit(SocialLendingContract, "LoanRepaid")
+    .withArgs(1);
+  });
 });
 
 });
