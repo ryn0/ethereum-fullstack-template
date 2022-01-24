@@ -93,7 +93,7 @@ describe("SocialLending Contract", () => {
       ).to.be.revertedWith("Loan not found.");
     });
 
-    it("Should update loan details to PartiallyFunded when less than total is deposited", async function () {
+    it("Should update loan details to PartiallyFunded when less than total amount requested is deposited", async function () {
       await SocialLendingContract.connect(sender).createLoan(10000);
       await SocialLendingContract.connect(owner).depositToLoan(1, 100);
       let loanDetails = await SocialLendingContract.connect(owner).loanDetails(1);
