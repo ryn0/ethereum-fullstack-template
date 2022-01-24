@@ -153,11 +153,10 @@ describe("SocialLending Contract", () => {
         try {
           await SocialLendingContract.lenders(loanID, i);
           i++;
-      }
-      catch {
-        hasValue = false;
-      }
-
+        }
+        catch {
+          hasValue = false;
+        }
       } while(hasValue);
 
       expect(i).to.equal(2);
