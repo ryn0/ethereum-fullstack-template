@@ -9,8 +9,10 @@ contract SocialLending {
 
     address public owner;
     uint8 interestRate = 7; // TODO: this needs to be a percentage, might need to use a library because we can't use decimals
-
+    uint8 loanDurationInDays = 90;
+    
     event LoanRequested(uint loanID);
+    event LoanNeedsRepayment(uint loanID);
 
     // ETH borrower address -> loanID (note: assumes only 1 loan per address)
     mapping (address => uint) public borrowers;
@@ -25,7 +27,7 @@ contract SocialLending {
 
     struct LoanDetail {
         uint256 loanID;
-        uint tenor; // repayment date
+        uint256 tenor; // repayment date
         uint128 loanAmount;
         uint128 amountDeposited;
         uint128 amountRepaid;
@@ -55,15 +57,6 @@ contract SocialLending {
         owner  = msg.sender;
     }
 
-    function requestLoan() public {
-/* The borrower connects to the dapp with his wallet
-    The borrower specifies the terms of the loan he wants - amount and tenor
-    Specifies the ethereum address of the backers
-   Calls function createLoan()
-   Calls a function to create a unique link that can be shared with the backer 
-*/
-    }
-
     function createLoan(
         uint128 _loanAmount
     ) external payable returns (uint loanID) {
@@ -90,12 +83,12 @@ contract SocialLending {
         require(_depositAmount > 0, "Deposit amount must be greater than zero.");
         LoanDetail memory loanDetail = loanDetails[_loanID];
         require(loanDetail.loanID > 0, "Loan not found.");
-        loanDetail.amountDeposited = loanDetail.amountDeposited + _depositAmount;
+        loanDetail.amountDeposited += _depositAmount;
 
         if (loanDetail.loanAmount > loanDetail.amountDeposited){
             loanDetails[_loanID] = LoanDetail(
                                           loanDetail.loanID,
-                                          0,
+                                          loanDetail.tenor,
                                           loanDetail.loanAmount,
                                           loanDetail.amountDeposited,
                                           loanDetail.amountRepaid,
@@ -105,16 +98,27 @@ contract SocialLending {
         } else if (loanDetail.amountDeposited >= loanDetail.loanAmount) {
             loanDetails[_loanID] = LoanDetail(
                                           loanDetail.loanID,
-                                          0, // TODO: set date to repay
+                                          (block.timestamp + 90 * 1 days),
                                           loanDetail.loanAmount,
                                           loanDetail.amountDeposited,
                                           loanDetail.amountRepaid,
                                           loanDetail.interestRate,
                                           loanDetail.borrowerAddress,
                                           LoanStatus.NeedsRepayment);
+            emit LoanNeedsRepayment(_loanID);
         }
 
     }
+
+    function requestLoan() public {
+/* The borrower connects to the dapp with his wallet
+    The borrower specifies the terms of the loan he wants - amount and tenor
+    Specifies the ethereum address of the backers
+   Calls function createLoan()
+   Calls a function to create a unique link that can be shared with the backer 
+*/
+    }
+
 
     function createUniqueLoanLink() public {
 /* A request to be sent to the specified ethereum address? Or a regular link that can be shared on social media or emailed to the backers to request to connect and fund for the loan  

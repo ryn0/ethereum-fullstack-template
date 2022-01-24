@@ -108,6 +108,23 @@ describe("SocialLending Contract", () => {
     expect(loanDetails.loanStatus).to.equal(LoanStatus.NeedsRepayment)
   });
 
+  it("Should set the tenor to 90 days in the future once loan has requested funds", async function () {
+    await SocialLendingContract.connect(sender).createLoan(10000);
+    await SocialLendingContract.connect(owner).depositToLoan(1, 10000);
+    let loanDetails = await SocialLendingContract.connect(owner).loanDetails(1);
+    const today = new Date();
+    const expectedLoanRepaymentDateMin = new Date();
+    expectedLoanRepaymentDateMin.setDate(today.getDate() + 89);
+    const expectedLoanRepaymentDateMax = new Date();
+    expectedLoanRepaymentDateMax.setDate(today.getDate() + 91);
+    var loanRepaymentDate = new Date(parseInt(loanDetails.tenor * 1000));
+    console.log(loanRepaymentDate);
+
+    // note: due to block.timestamp, we are just saying it's between 89 and 91 days
+    expect(loanRepaymentDate).to.lessThan(expectedLoanRepaymentDateMax).and.
+                                 greaterThan(expectedLoanRepaymentDateMin)
+  });
+
   // it("Should be able to retrieve a created loan", async function () {
   //   await SocialLendingContract.connect(sender).createLoan(10000);
   //   await expect(
