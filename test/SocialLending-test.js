@@ -70,7 +70,7 @@ describe("SocialLending Contract", () => {
         expect(loanDetails2.loanID).to.equal(2) && expect(loanDetails2.loanAmount).to.equal(10000);
     });
 
-    it("Should have an loan status of New after initially created", async function () {
+    it("Should have a loan status of New after initially created", async function () {
       await SocialLendingContract.connect(sender).createLoan(1000);
       let loanDetails = await SocialLendingContract.loanDetails(1);
     
