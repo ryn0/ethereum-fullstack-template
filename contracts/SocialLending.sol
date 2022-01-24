@@ -85,6 +85,8 @@ contract SocialLending {
         require(loanDetail.loanID > 0, "Loan not found.");
         loanDetail.amountDeposited += _depositAmount;
 
+        // TODO: add the backer/lender to a list and determine how to deal with more than 1 deposit by address
+
         if (loanDetail.loanAmount > loanDetail.amountDeposited){
             loanDetails[_loanID] = LoanDetail(
                                           loanDetail.loanID,
@@ -96,9 +98,15 @@ contract SocialLending {
                                           loanDetail.borrowerAddress,
                                           LoanStatus.PartiallyFunded);
         } else if (loanDetail.amountDeposited >= loanDetail.loanAmount) {
+
+            /* NOTE: it would be better to revert transaction if more than the
+                amount requested is deposited into the loan but it's not clear
+                how fees work right now so just allow any amount greater to or
+                equal to the amount requested
+            */
             loanDetails[_loanID] = LoanDetail(
                                           loanDetail.loanID,
-                                          (block.timestamp + 90 * 1 days),
+                                          (block.timestamp + loanDurationInDays * 1 days),
                                           loanDetail.loanAmount,
                                           loanDetail.amountDeposited,
                                           loanDetail.amountRepaid,
@@ -106,8 +114,9 @@ contract SocialLending {
                                           loanDetail.borrowerAddress,
                                           LoanStatus.NeedsRepayment);
             emit LoanNeedsRepayment(_loanID);
+        } else {
+            revert("Something went wrong, amount deposited is unexpected.");
         }
-
     }
 
     function requestLoan() public {

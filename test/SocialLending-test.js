@@ -122,8 +122,8 @@ describe("SocialLending Contract", () => {
       expectedLoanRepaymentDateMax.setDate(today.getDate() + 91);
       var loanRepaymentDate = new Date(parseInt(loanDetails.tenor * 1000));
 
-    // note: due to block.timestamp, we are just saying it's between 89 and 91 days
-    expect(loanRepaymentDate).to.lessThan(expectedLoanRepaymentDateMax).and.
+      // note: due to block.timestamp, we are just saying it's between 89 and 91 days
+      expect(loanRepaymentDate).to.lessThan(expectedLoanRepaymentDateMax).and.
                                  greaterThan(expectedLoanRepaymentDateMin)
   });
 
