@@ -61,6 +61,7 @@ contract SocialLending {
         owner  = msg.sender;
     }
 
+    // TODO: Should this be payable?
     function createLoan(
         uint128 _loanAmount
     ) external payable returns (uint loanID) {
@@ -88,7 +89,7 @@ contract SocialLending {
     }
 
     function depositToLoan(uint256 _loanID, uint128 _depositAmount) external payable {
-        
+        require(msg.value == _depositAmount, "Amount sent does not equal declared deposit amount.");
         require(_depositAmount > 0, "Deposit amount must be greater than zero.");
         LoanDetail memory loanDetail = loanDetails[_loanID];
         require(loanDetail.loanID > 0, "Loan not found.");
@@ -136,6 +137,7 @@ contract SocialLending {
     }
 
     function repayLoan(uint256 _loanID, uint128 _repaymentAmount) external payable {
+        require(msg.value == _repaymentAmount, "Amount sent does not equal declared repayment amount.");
         require(_repaymentAmount > 0, "Repayment amount must be greater than zero.");
         LoanDetail memory loanDetail = loanDetails[_loanID];
         require(loanDetail.loanID > 0, "Loan not found.");
