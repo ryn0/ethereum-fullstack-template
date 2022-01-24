@@ -73,8 +73,11 @@ contract SocialLending {
                                             interestRate,
                                             msg.sender,
                                             LoanStatus.New);
-        loanDetails[currentLoanID] = loanDetail;
-        emit LoanRequested(currentLoanID);
+        loanDetails[loanDetail.loanID] = loanDetail;
+
+        // TODO: add to a mapping of the borrower and their loan ID
+        borrowers[msg.sender] = loanDetail.loanID;
+        emit LoanRequested(loanDetail.loanID);
         return loanID;
     }
 
