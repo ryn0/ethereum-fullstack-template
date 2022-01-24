@@ -5,6 +5,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import App from './App';
 import Borrow from './Borrow';
 import Lend from './Lend';
+import Repay from './Repay';
 
 const rootElement = document.getElementById('root');
 
@@ -19,6 +20,7 @@ const Wrapper = () => {
           <Route path="/" element={<App />} />
           <Route path="/borrow" element={<Borrow />}/>
           <Route path="lend/:loanId" element={<Lend />} />
+          <Route path="repay/:loanId" element={<Repay />} />
           <Route path="*" element={<App />} />
         </Routes>
       </BrowserRouter>
