@@ -62,6 +62,8 @@ contract SocialLending {
     ) external payable returns (uint loanID) {
         
         require(_loanAmount > 0, "Loan amount must be greater than zero.");
+        uint256 existingLoanID = borrowers[msg.sender];
+        require(existingLoanID == 0, "Loan already exists for borrower.");
         loanIDCounter.increment();    
         uint256 currentLoanID = loanIDCounter.current();
         LoanDetail memory loanDetail = LoanDetail(
@@ -74,8 +76,6 @@ contract SocialLending {
                                             msg.sender,
                                             LoanStatus.New);
         loanDetails[loanDetail.loanID] = loanDetail;
-
-        // TODO: add to a mapping of the borrower and their loan ID
         borrowers[msg.sender] = loanDetail.loanID;
         emit LoanRequested(loanDetail.loanID);
         return loanID;

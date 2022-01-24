@@ -22,11 +22,15 @@ describe("SocialLending Contract", () => {
   let owner;
   let sender;
   let recipient1, addrs;
+  let borrower1, borrower2;
 
   beforeEach(async () => {
     // Get the ContractFactory and Signers here.
-    SocialLending = await ethers.getContractFactory("SocialLending");
-    [owner, sender, recipient1, recipient2, ...addrs] = await ethers.getSigners();
+    SocialLending = await ethers.getContractFactory("SocialLending", accounts => {
+       borrower1 = accounts[0];
+       borrower2 = accounts[1];
+    });
+    [owner, sender, recipient1, recipient2, borrower1, borrower2, ...addrs] = await ethers.getSigners();
 
     SocialLendingContract = await SocialLending.deploy();
 
@@ -42,11 +46,18 @@ describe("SocialLending Contract", () => {
 
   describe("Create Loan", function () {
 
-      it("Should only allow valid loan amounts", async function () {
+    it("Should only allow valid loan amounts", async function () {
         await expect(
             SocialLendingContract.connect(owner).createLoan(0)
         ).to.be.revertedWith("Loan amount must be greater than zero.");
     });
+
+    it("Should not allow the same borrower to get more than 1 loan for their address", async function () {
+      SocialLendingContract.connect(borrower1).createLoan(10000)
+      await expect(
+          SocialLendingContract.connect(borrower1).createLoan(10000)
+      ).to.be.revertedWith("Loan already exists for borrower.");
+    });    
 
     it("Should emit LoanRequested event when loan is created", async function () {
         await expect(
@@ -54,6 +65,14 @@ describe("SocialLending Contract", () => {
         ).to.emit(SocialLendingContract, "LoanRequested")
         .withArgs(1);
     });
+
+    it("Should get back loan details from borrower's address", async function () {
+      await SocialLendingContract.connect(borrower1).createLoan(10000);
+      let loanID = await SocialLendingContract.borrowers(borrower1.address);
+      let loanDetails = await SocialLendingContract.loanDetails(loanID);
+
+      expect(borrower1.address).to.equal(loanDetails.borrowerAddress)
+    });    
 
     it("Should get back correct loan values for first loan if one is created", async function () {
         await SocialLendingContract.connect(sender).createLoan(1000);
@@ -63,11 +82,11 @@ describe("SocialLending Contract", () => {
     });
 
     it("Should get back correct loan values for second loan if two are created", async function () {
-        await SocialLendingContract.connect(sender).createLoan(1000);
-        await SocialLendingContract.connect(sender).createLoan(10000);
+        await SocialLendingContract.connect(borrower1).createLoan(1000);
+        await SocialLendingContract.connect(borrower2).createLoan(10000);
         let loanDetails2 = await SocialLendingContract.loanDetails(2);
-      
-        expect(loanDetails2.loanID).to.equal(2) && expect(loanDetails2.loanAmount).to.equal(10000);
+    
+      expect(loanDetails2.loanID).to.equal(2) && expect(loanDetails2.loanAmount).to.equal(10000);
     });
 
     it("Should have a loan status of New after initially created", async function () {
@@ -75,7 +94,7 @@ describe("SocialLending Contract", () => {
       let loanDetails = await SocialLendingContract.loanDetails(1);
     
       expect(loanDetails.loanStatus).to.equal(LoanStatus.New);
-  });
+    });
   });
 
   describe("Deposit To Loan", function () {
