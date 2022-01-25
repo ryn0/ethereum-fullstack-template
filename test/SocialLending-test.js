@@ -182,7 +182,6 @@ describe("SocialLending Contract", () => {
       } while(hasValue);
 
       expect(i).to.equal(2);
-
     });
 
     it("Should set the tenor to 90 days in the future once loan has requested funds", async function () {
@@ -218,7 +217,6 @@ describe("SocialLending Contract", () => {
     });
 
   });
-
 
   describe("Repay Loan", function () {
     it("Should revert if no ether is sent", async function() {
@@ -346,7 +344,6 @@ describe("SocialLending Contract", () => {
       await SocialLendingContract.connect(owner).payoutDepositsWithInterest(1);
       let lender = await SocialLendingContract.connect(owner).lenders(1, 0);
       expect(lender.isRepaid).to.equal(true);
-
     });
-});
+  });
 });

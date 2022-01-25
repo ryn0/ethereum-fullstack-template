@@ -189,15 +189,6 @@ contract SocialLending {
 */
     }
 
-    function payoutDepositsWithInterest(uint256 _loanID) external payable {
-        for (uint i=0; i< lenders[_loanID].length; i++) {
-            Lender memory lender = lenders[_loanID][i];
-            lender.isRepaid = true;
-            lenders[_loanID][i] = lender;
-        }
-    }
-
-
     function createUniqueLoanLink() public {
 /* A request to be sent to the specified ethereum address? Or a regular link that can be shared on social media or emailed to the backers to request to connect and fund for the loan  
 */
@@ -227,5 +218,13 @@ contract SocialLending {
             loanDetail.loanAmountWithInterest,
             LoanStatus.NeedsRepayment);
         emit LoanNeedsRepayment(loanDetail.loanID);
+    }
+
+    function payoutDepositsWithInterest(uint256 _loanID) external payable {
+        for (uint i=0; i< lenders[_loanID].length; i++) {
+            Lender memory lender = lenders[_loanID][i];
+            lender.isRepaid = true;
+            lenders[_loanID][i] = lender;
+        }
     }
 }
