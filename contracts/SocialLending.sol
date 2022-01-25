@@ -226,6 +226,8 @@ contract SocialLending {
             Lender memory lender = lenders[_loanID][i];
             lender.isRepaid = true;
             lenders[_loanID][i] = lender;
+            (bool sent,) = msg.sender.call{value: lender.amountToRepay}("");
+            require(sent, "Failed to send Ether");
         }
     }
 }
