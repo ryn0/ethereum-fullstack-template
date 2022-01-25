@@ -12,6 +12,7 @@ contract SocialLending {
     uint8 loanDurationInDays = 90;
     
     event LoanRequested(uint loanID);
+    event LoanFunded(uint loanID);
     event LoanNeedsRepayment(uint loanID);
     event LenderDeposit(uint loanID, address lenderAddress);
     event LoanRepaid(uint loanID);
@@ -32,6 +33,7 @@ contract SocialLending {
         uint256 tenor; // repayment date
         uint128 loanAmount;
         uint128 amountDeposited;
+        uint128 amountDisbursed;
         uint128 amountRepaid;
         uint128 interestRate;
         address borrowerAddress;
@@ -49,6 +51,7 @@ contract SocialLending {
     enum LoanStatus {
         New,
         PartiallyFunded,
+        AwaitingDisbursement,
         NeedsRepayment,
         Repaid,
         FailedToRepayByDeadline
@@ -71,6 +74,7 @@ contract SocialLending {
                                             currentLoanID,
                                             0,
                                             _loanAmount,
+                                            0,
                                             0,
                                             0,
                                             interestRate,
@@ -99,6 +103,7 @@ contract SocialLending {
                                           loanDetail.tenor,
                                           loanDetail.loanAmount,
                                           loanDetail.amountDeposited,
+                                          loanDetail.amountDisbursed,
                                           loanDetail.amountRepaid,
                                           loanDetail.interestRate,
                                           loanDetail.borrowerAddress,
@@ -116,12 +121,13 @@ contract SocialLending {
                                           (block.timestamp + loanDurationInDays * 1 days),
                                           loanDetail.loanAmount,
                                           loanDetail.amountDeposited,
+                                          loanDetail.amountDisbursed,
                                           loanDetail.amountRepaid,
                                           loanDetail.interestRate,
                                           loanDetail.borrowerAddress,
                                           loanDetail.loanAmountWithInterest,
-                                          LoanStatus.NeedsRepayment);
-            emit LoanNeedsRepayment(loanDetail.loanID);
+                                          LoanStatus.AwaitingDisbursement);
+            emit LoanFunded(loanDetail.loanID);
         } else {
             revert("Something went wrong, amount deposited is unexpected.");
         }
@@ -142,6 +148,7 @@ contract SocialLending {
                                           loanDetail.tenor,
                                           loanDetail.loanAmount,
                                           loanDetail.amountDeposited,
+                                          loanDetail.amountDisbursed,
                                           loanDetail.amountRepaid,
                                           loanDetail.interestRate,
                                           loanDetail.borrowerAddress,
@@ -153,6 +160,7 @@ contract SocialLending {
                                           loanDetail.tenor,
                                           loanDetail.loanAmount,
                                           loanDetail.amountDeposited,
+                                          loanDetail.amountDisbursed,
                                           loanDetail.amountRepaid,
                                           loanDetail.interestRate,
                                           loanDetail.borrowerAddress,
@@ -185,11 +193,29 @@ contract SocialLending {
 */
     }
 
-    function disburseLoan() public {
-/* This function is to be called when LoanBackingSecured() returns true. 
-   Loan amount is transferred from backers to the borrower.
-   Calls LoanRunning() function to calculate and post daily yields (only in accounting data, no transfer of funds)
-borrowerInterestDue and backerInterestEarned updated daily
-*/
+    function disburseLoan(uint256 _loanID) external {
+        LoanDetail memory loanDetail = loanDetails[_loanID];
+        require(loanDetail.loanAmount > 0, "Loan not found.");
+        require(loanDetail.borrowerAddress == msg.sender, "Only the borrower may receive disbursements.");
+        require(loanDetail.loanStatus != LoanStatus.NeedsRepayment, "The loan has already been disbursed.");
+        require(loanDetail.amountDisbursed == 0, "The loan has already been disbursed.");
+        require(loanDetail.loanStatus == LoanStatus.AwaitingDisbursement, "The loan has not yet been funded.");
+        require(loanDetail.amountDeposited >= loanDetail.loanAmount, "The loan has not yet been funded.");
+
+        (bool sent,) = msg.sender.call{value: loanDetail.loanAmount}("");
+        require(sent, "Failed to send Ether");
+
+        loanDetails[_loanID] = LoanDetail(
+            loanDetail.loanID,
+            loanDetail.tenor,
+            loanDetail.loanAmount,
+            loanDetail.amountDeposited,
+            loanDetail.loanAmount,
+            loanDetail.amountRepaid,
+            loanDetail.interestRate,
+            loanDetail.borrowerAddress,
+            loanDetail.loanAmountWithInterest,
+            LoanStatus.NeedsRepayment);
+        emit LoanNeedsRepayment(loanDetail.loanID);
     }
 }
