@@ -109,6 +109,19 @@ describe("SocialLending Contract", () => {
   });
 
   describe("Deposit To Loan", function () {
+    it("Should revert if no ether is sent", async function() {
+      await SocialLendingContract.connect(borrower1).createLoan(10000);
+      await expect(
+          SocialLendingContract.connect(lender1).depositToLoan(1, 100)
+      ).to.be.revertedWith("Amount sent does not equal declared deposit amount");
+    })
+
+    it("Should revert if the amount sent doesn't match _depositAmount", async function() {
+      await SocialLendingContract.connect(borrower1).createLoan(10000);
+      await expect(
+          SocialLendingContract.connect(lender1).depositToLoan(1, 100, {value: 95})
+      ).to.be.revertedWith("Amount sent does not equal declared deposit amount");
+    })
 
     it("Should only allow valid deposit amounts", async function () {
       await SocialLendingContract.connect(borrower1).createLoan(10000);
@@ -119,13 +132,13 @@ describe("SocialLending Contract", () => {
 
     it("Should only allow deposits to an existing loan", async function () {
       await expect(
-           SocialLendingContract.connect(lender1).depositToLoan(0, 10000) 
+           SocialLendingContract.connect(lender1).depositToLoan(0, 10000, {value: 10000})
       ).to.be.revertedWith("Loan not found.");
     });
 
     it("Should update loan details to PartiallyFunded when less than total amount requested is deposited", async function () {
       await SocialLendingContract.connect(borrower1).createLoan(10000);
-      await SocialLendingContract.connect(lender1).depositToLoan(1, 100);
+      await SocialLendingContract.connect(lender1).depositToLoan(1, 100, {value: 100});
       let loanDetails = await SocialLendingContract.connect(owner).loanDetails(1);
     
       expect(loanDetails.loanStatus).to.equal(LoanStatus.PartiallyFunded)
@@ -133,7 +146,7 @@ describe("SocialLending Contract", () => {
 
     it("Should update loan details to AwaitingDisbursement when requested amount is deposited in one deposit", async function () {
       await SocialLendingContract.connect(borrower1).createLoan(10000);
-      await SocialLendingContract.connect(lender1).depositToLoan(1, 10000);
+      await SocialLendingContract.connect(lender1).depositToLoan(1, 10000, {value: 10000});
       let loanDetails = await SocialLendingContract.connect(owner).loanDetails(1);
     
       expect(loanDetails.loanStatus).to.equal(LoanStatus.AwaitingDisbursement)
@@ -141,8 +154,8 @@ describe("SocialLending Contract", () => {
 
     it("Should update loan details to AwaitingDisbursement when requested amount is deposited in multiple deposits", async function () {
       await SocialLendingContract.connect(borrower1).createLoan(10000);
-      await SocialLendingContract.connect(lender1).depositToLoan(1, 5000);
-      await SocialLendingContract.connect(lender2).depositToLoan(1, 5000);
+      await SocialLendingContract.connect(lender1).depositToLoan(1, 5000, {value: 5000});
+      await SocialLendingContract.connect(lender2).depositToLoan(1, 5000, {value: 5000});
       let loanDetails = await SocialLendingContract.connect(owner).loanDetails(1);
     
       expect(loanDetails.loanStatus).to.equal(LoanStatus.AwaitingDisbursement)
@@ -152,8 +165,8 @@ describe("SocialLending Contract", () => {
       let loanID = 1;
 
       await SocialLendingContract.connect(borrower1).createLoan(10000);
-      await SocialLendingContract.connect(lender1).depositToLoan(loanID, 2500);
-      await SocialLendingContract.connect(lender2).depositToLoan(loanID, 7500);
+      await SocialLendingContract.connect(lender1).depositToLoan(loanID, 2500, {value: 2500});
+      await SocialLendingContract.connect(lender2).depositToLoan(loanID, 7500, {value: 7500});
      
       // TODO: find a way to loop through the array within a mapping without using a try/catch
       var hasValue = true;
@@ -174,7 +187,7 @@ describe("SocialLending Contract", () => {
 
     it("Should set the tenor to 90 days in the future once loan has requested funds", async function () {
       await SocialLendingContract.connect(borrower1).createLoan(10000);
-      await SocialLendingContract.connect(lender1).depositToLoan(1, 10000);
+      await SocialLendingContract.connect(lender1).depositToLoan(1, 10000, {value: 10000});
       let loanDetails = await SocialLendingContract.connect(owner).loanDetails(1);
       var today = new Date();
       const expectedLoanRepaymentDateMin = new Date();
@@ -191,7 +204,7 @@ describe("SocialLending Contract", () => {
     it("Should emit LenderDeposit event when a lender deposits", async function () {
       await SocialLendingContract.connect(borrower1).createLoan(1000);
       await expect(
-        SocialLendingContract.connect(sender).depositToLoan(1, 1000)
+        SocialLendingContract.connect(sender).depositToLoan(1, 1000, {value: 1000})
       ).to.emit(SocialLendingContract, "LenderDeposit")
       .withArgs(1, sender.address);
     });
@@ -199,7 +212,7 @@ describe("SocialLending Contract", () => {
     it("Should emit LoanFunded event when loan has requested funds", async function () {
       await SocialLendingContract.connect(borrower1).createLoan(1000);
       await expect(
-        SocialLendingContract.connect(lender1).depositToLoan(1, 1000)
+        SocialLendingContract.connect(lender1).depositToLoan(1, 1000, {value: 1000})
       ).to.emit(SocialLendingContract, "LoanFunded")
       .withArgs(1);
     });
@@ -208,10 +221,25 @@ describe("SocialLending Contract", () => {
 
 
   describe("Repay Loan", function () {
+    it("Should revert if no ether is sent", async function() {
+      await SocialLendingContract.connect(borrower1).createLoan(10000);
+      SocialLendingContract.connect(lender1).depositToLoan(1, 10000, {value: 10000})
+      await expect(
+          SocialLendingContract.connect(lender1).repayLoan(1, 10000)
+      ).to.be.revertedWith("Amount sent does not equal declared repayment amount.");
+    })
+
+    it("Should revert if the amount sent doesn't match _repaymentAmount", async function() {
+      await SocialLendingContract.connect(borrower1).createLoan(10000);
+      SocialLendingContract.connect(lender1).depositToLoan(1, 10000, {value: 10000})
+      await expect(
+          SocialLendingContract.connect(lender1).repayLoan(1, 10000, {value: 9999})
+      ).to.be.revertedWith("Amount sent does not equal declared repayment amount.");
+    })
 
     it("Should only allow valid repayment amounts", async function () {
       await SocialLendingContract.connect(borrower1).createLoan(10000);
-      await SocialLendingContract.connect(lender1).depositToLoan(1, 10000)
+      await SocialLendingContract.connect(lender1).depositToLoan(1, 10000, {value: 10000})
       await expect(
         SocialLendingContract.connect(borrower1).repayLoan(1, 0)
       ).to.be.revertedWith("Repayment amount must be greater than zero.");
@@ -219,14 +247,14 @@ describe("SocialLending Contract", () => {
 
     it("Should only allow repayment to an existing loan", async function () {
       await expect(
-           SocialLendingContract.connect(lender1).repayLoan(0, 10000)
+           SocialLendingContract.connect(lender1).repayLoan(0, 10000, {value: 10000})
       ).to.be.revertedWith("Loan not found.");
     });
 
     it("Should keep loan status as NeedsRepayment if amount repaid is less than the amount to repay", async function () {
       await SocialLendingContract.connect(borrower1).createLoan(1000);
-      await SocialLendingContract.connect(lender1).depositToLoan(1, 1000);
-      await SocialLendingContract.connect(borrower1).repayLoan(1, 500);
+      await SocialLendingContract.connect(lender1).depositToLoan(1, 1000, {value: 1000});
+      await SocialLendingContract.connect(borrower1).repayLoan(1, 500, {value: 500});
       let loanDetails = await SocialLendingContract.connect(borrower1).loanDetails(1);
 
       expect(loanDetails.loanStatus).to.equal(LoanStatus.NeedsRepayment)
@@ -234,8 +262,8 @@ describe("SocialLending Contract", () => {
 
     it("Should set loan status to Repaid if amount repaid was what was due", async function () {
       await SocialLendingContract.connect(borrower1).createLoan(1000);
-      await SocialLendingContract.connect(lender1).depositToLoan(1, 1000);
-      await SocialLendingContract.connect(borrower1).repayLoan(1, 1070);
+      await SocialLendingContract.connect(lender1).depositToLoan(1, 1000, {value: 1000});
+      await SocialLendingContract.connect(borrower1).repayLoan(1, 1070, {value: 1070});
       let loanDetails = await SocialLendingContract.connect(borrower1).loanDetails(1);
 
       expect(loanDetails.loanStatus).to.equal(LoanStatus.Repaid)
@@ -243,10 +271,10 @@ describe("SocialLending Contract", () => {
 
     it("Should emit event that loan was repaid if it was paid back fully", async function () {
       await SocialLendingContract.connect(borrower1).createLoan(1000);
-      await SocialLendingContract.connect(lender1).depositToLoan(1, 1000);
+      await SocialLendingContract.connect(lender1).depositToLoan(1, 1000, {value: 1000});
 
       await expect(
-        SocialLendingContract.connect(borrower1).repayLoan(1, 1070)
+        SocialLendingContract.connect(borrower1).repayLoan(1, 1070, {value: 1070})
       ).to.emit(SocialLendingContract, "LoanRepaid")
       .withArgs(1);
     });
@@ -275,7 +303,7 @@ describe("SocialLending Contract", () => {
 
     it("Should revert if the loan is partially funded", async function () {
       await SocialLendingContract.connect(borrower1).createLoan(10000);
-      await SocialLendingContract.connect(lender1).depositToLoan(1, 9999);
+      await SocialLendingContract.connect(lender1).depositToLoan(1, 9999, {value: 9999});
       await expect(
           SocialLendingContract.connect(borrower1).disburseLoan(1)
       ).to.be.revertedWith("The loan has not yet been funded.");
