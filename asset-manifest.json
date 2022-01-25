@@ -1,0 +1,10 @@
+{
+  "files": {
+    "main.js": "/ethereum-fullstack-template/static/js/main.d491500f.js",
+    "index.html": "/ethereum-fullstack-template/index.html",
+    "main.d491500f.js.map": "/ethereum-fullstack-template/static/js/main.d491500f.js.map"
+  },
+  "entrypoints": [
+    "static/js/main.d491500f.js"
+  ]
+}
