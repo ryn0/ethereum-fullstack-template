@@ -1,6 +1,6 @@
 {
-  "name": "crypto123",
-  "homepage": "https://subhranshudas.github.io/crypto123",
+  "name": "SocialLendingDapp",
+  "homepage": "https://ryn0.github.io/ethereum-fullstack-template",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
