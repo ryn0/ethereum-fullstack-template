@@ -67,6 +67,8 @@ contract SocialLending {
         
         require(_loanAmount > 0, "Loan amount must be greater than zero.");
         uint256 existingLoanID = borrowers[msg.sender];
+
+        // TODO: consider allowing a new loan if existing loan(s) were paid back
         require(existingLoanID == 0, "Loan already exists for borrower.");
         loanIDCounter.increment();    
         uint256 currentLoanID = loanIDCounter.current();
@@ -133,6 +135,8 @@ contract SocialLending {
         emit LenderDeposit(loanDetail.loanID, msg.sender);
     }
 
+    // TODO: look up functions for mappings, make mappings private if required by the front end
+
     function repayLoan(uint256 _loanID, uint128 _repaymentAmount) external payable {
         require(msg.value == _repaymentAmount, "Amount sent does not equal declared repayment amount.");
         require(_repaymentAmount > 0, "Repayment amount must be greater than zero.");
@@ -166,7 +170,7 @@ contract SocialLending {
                                           loanDetail.loanAmountWithInterest,
                                           LoanStatus.Repaid);
 
-            // TODO: remove the borrower address from the mapping so they could get another loan                              
+            // TODO: write to a mapping which will include the borrow address and their loan IDs                         
             emit LoanRepaid(loanDetail.loanID);
         } else {
             revert("Something went wrong, amount repaid is unexpected.");
