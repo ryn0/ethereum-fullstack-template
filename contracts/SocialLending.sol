@@ -61,10 +61,9 @@ contract SocialLending {
         owner  = msg.sender;
     }
 
-    // TODO: Should this be payable?
     function createLoan(
         uint128 _loanAmount
-    ) external payable returns (uint loanID) {
+    ) external returns (uint loanID) {
         
         require(_loanAmount > 0, "Loan amount must be greater than zero.");
         uint256 existingLoanID = borrowers[msg.sender];
@@ -94,9 +93,7 @@ contract SocialLending {
         LoanDetail memory loanDetail = loanDetails[_loanID];
         require(loanDetail.loanID > 0, "Loan not found.");
         loanDetail.amountDeposited += _depositAmount;
-
-        // TODO: caculate the amount which should be repaid to the lender, here we are just setting the amount to the deposit
-        lenders[loanDetail.loanID].push(Lender(msg.sender, _depositAmount, false, _depositAmount));
+        lenders[loanDetail.loanID].push(Lender(msg.sender, _depositAmount, false, calculateLoanWithInterest(_depositAmount)));
         
         if (loanDetail.loanAmount > loanDetail.amountDeposited){
             loanDetails[loanDetail.loanID] = LoanDetail(
