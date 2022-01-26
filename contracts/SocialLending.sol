@@ -18,13 +18,13 @@ contract SocialLending {
     event LoanRepaid(uint loanID);
 
     // ETH borrower address -> loanID (note: assumes only 1 loan per address)
-    mapping (address => uint) public borrowers;
+    mapping (address => uint) private borrowers;
 
     // loanID -> loan details (note: gets the details of a loan for a given loanID)
-    mapping (uint => LoanDetail) public loanDetails;
+    mapping (uint => LoanDetail) private loanDetails;
 
     // loanID -> loan backers (note: gets all of the lenders for a given loanID)
-    mapping (uint => Lender[]) public lenders;
+    mapping (uint => Lender[]) private lenders;
 
     Counters.Counter public loanIDCounter;
 
