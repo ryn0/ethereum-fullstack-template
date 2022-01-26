@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import { Typography, Box } from '@mui/material';
 import Panel from './Panel';
 import ConnectWithMetaMaskButton from "./ConnectWithMetaMaskButton";
+import { Web3Context } from './web3Context';
 
 import abiJson from "./abis/SocialLendingContract.json";
 import addressJson from "./abis/contract-address.json";
@@ -21,13 +22,14 @@ const ButtonLinks = ({ text, onClick, style }) => {
 };
 
 function App() {
+  const {
+    provider, setProvider,
+    contract, setContract,
+    contractOwner, setContractOwner,
+    currentAccount, setCurrentAccount
+  } = useContext(Web3Context);
+
   const navigate = useNavigate();
-
-  const [contractOwner, setContractOwner] = useState(null);
-  const [currentAccount, setCurrentAccount] = useState(null);
-
-  const [provider, setProvider] = useState(null);
-  const [contract, setContract] = useState(null);
 
   const address = addressJson.SocialLendingContract;
   const contractABI = abiJson.abi;
@@ -48,6 +50,7 @@ function App() {
       const owner = await contract.owner();
 
       setContractOwner(owner.toLowerCase());
+
     } catch (err) {
       console.error(err);
     }
