@@ -71,23 +71,23 @@ describe("SocialLending Contract", () => {
 
     it("Should get back loan details from borrower's address", async function () {
       await SocialLendingContract.connect(borrower1).createLoan(10000);
-      let loanID = await SocialLendingContract.borrowers(borrower1.address);
-      let loanDetails = await SocialLendingContract.loanDetails(loanID);
+      let loanID = await SocialLendingContract.getBorrowersLoanID(borrower1.address);
+      let loanDetails = await SocialLendingContract.getLoanDetailsFromLoanID(loanID);
 
       expect(borrower1.address).to.equal(loanDetails.borrowerAddress)
     });    
 
     it("Should set interest rate to 7% more than the loan amount", async function () {
       await SocialLendingContract.connect(borrower1).createLoan(10000);
-      let loanID = await SocialLendingContract.borrowers(borrower1.address);
-      let loanDetails = await SocialLendingContract.loanDetails(loanID);
+      let loanID = await SocialLendingContract.getBorrowersLoanID(borrower1.address);
+      let loanDetails = await SocialLendingContract.getLoanDetailsFromLoanID(loanID);
 
       expect(loanDetails.loanAmountWithInterest).to.equal(10700);
     });  
 
     it("Should get back correct loan values for first loan if one is created", async function () {
         await SocialLendingContract.connect(borrower1).createLoan(1000);
-        let loanDetails = await SocialLendingContract.loanDetails(1);
+        let loanDetails = await SocialLendingContract.getLoanDetailsFromLoanID(1);
       
         expect(loanDetails.loanID).to.equal(1) && expect(loanDetails.loanAmount).to.equal(1000);
     });
@@ -95,14 +95,14 @@ describe("SocialLending Contract", () => {
     it("Should get back correct loan values for second loan if two are created", async function () {
         await SocialLendingContract.connect(borrower1).createLoan(1000);
         await SocialLendingContract.connect(borrower2).createLoan(10000);
-        let loanDetails2 = await SocialLendingContract.loanDetails(2);
+        let loanDetails2 = await SocialLendingContract.getLoanDetailsFromLoanID(2);
     
       expect(loanDetails2.loanID).to.equal(2) && expect(loanDetails2.loanAmount).to.equal(10000);
     });
 
     it("Should have a loan status of New after initially created", async function () {
       await SocialLendingContract.connect(borrower1).createLoan(1000);
-      let loanDetails = await SocialLendingContract.loanDetails(1);
+      let loanDetails = await SocialLendingContract.getLoanDetailsFromLoanID(1);
     
       expect(loanDetails.loanStatus).to.equal(LoanStatus.New);
     });
@@ -139,7 +139,7 @@ describe("SocialLending Contract", () => {
     it("Should update loan details to PartiallyFunded when less than total amount requested is deposited", async function () {
       await SocialLendingContract.connect(borrower1).createLoan(10000);
       await SocialLendingContract.connect(lender1).depositToLoan(1, 100, {value: 100});
-      let loanDetails = await SocialLendingContract.connect(owner).loanDetails(1);
+      let loanDetails = await SocialLendingContract.connect(owner).getLoanDetailsFromLoanID(1);
     
       expect(loanDetails.loanStatus).to.equal(LoanStatus.PartiallyFunded);
     });
@@ -147,7 +147,7 @@ describe("SocialLending Contract", () => {
     it("Should update loan details to AwaitingDisbursement when requested amount is deposited in one deposit", async function () {
       await SocialLendingContract.connect(borrower1).createLoan(10000);
       await SocialLendingContract.connect(lender1).depositToLoan(1, 10000, {value: 10000});
-      let loanDetails = await SocialLendingContract.connect(owner).loanDetails(1);
+      let loanDetails = await SocialLendingContract.connect(owner).getLoanDetailsFromLoanID(1);
     
       expect(loanDetails.loanStatus).to.equal(LoanStatus.AwaitingDisbursement);
     });
@@ -156,7 +156,7 @@ describe("SocialLending Contract", () => {
       await SocialLendingContract.connect(borrower1).createLoan(10000);
       await SocialLendingContract.connect(lender1).depositToLoan(1, 5000, {value: 5000});
       await SocialLendingContract.connect(lender2).depositToLoan(1, 5000, {value: 5000});
-      let loanDetails = await SocialLendingContract.connect(owner).loanDetails(1);
+      let loanDetails = await SocialLendingContract.connect(owner).getLoanDetailsFromLoanID(1);
     
       expect(loanDetails.loanStatus).to.equal(LoanStatus.AwaitingDisbursement);
     });
@@ -187,7 +187,7 @@ describe("SocialLending Contract", () => {
     it("Should set the tenor to 90 days in the future once loan has requested funds", async function () {
       await SocialLendingContract.connect(borrower1).createLoan(10000);
       await SocialLendingContract.connect(lender1).depositToLoan(1, 10000, {value: 10000});
-      let loanDetails = await SocialLendingContract.connect(owner).loanDetails(1);
+      let loanDetails = await SocialLendingContract.connect(owner).getLoanDetailsFromLoanID(1);
       var today = new Date();
       const expectedLoanRepaymentDateMin = new Date();
       expectedLoanRepaymentDateMin.setDate(today.getDate() + 89);
@@ -253,7 +253,7 @@ describe("SocialLending Contract", () => {
       await SocialLendingContract.connect(borrower1).createLoan(1000);
       await SocialLendingContract.connect(lender1).depositToLoan(1, 1000, {value: 1000});
       await SocialLendingContract.connect(borrower1).repayLoan(1, 500, {value: 500});
-      let loanDetails = await SocialLendingContract.connect(borrower1).loanDetails(1);
+      let loanDetails = await SocialLendingContract.connect(borrower1).getLoanDetailsFromLoanID(1);
 
       expect(loanDetails.loanStatus).to.equal(LoanStatus.NeedsRepayment);
     });
@@ -262,7 +262,7 @@ describe("SocialLending Contract", () => {
       await SocialLendingContract.connect(borrower1).createLoan(1000);
       await SocialLendingContract.connect(lender1).depositToLoan(1, 1000, {value: 1000});
       await SocialLendingContract.connect(borrower1).repayLoan(1, 1070, {value: 1070});
-      let loanDetails = await SocialLendingContract.connect(borrower1).loanDetails(1);
+      let loanDetails = await SocialLendingContract.connect(borrower1).getLoanDetailsFromLoanID(1);
 
       expect(loanDetails.loanStatus).to.equal(LoanStatus.Repaid);
     });

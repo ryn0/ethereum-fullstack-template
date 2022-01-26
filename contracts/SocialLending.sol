@@ -181,6 +181,18 @@ contract SocialLending {
         return ((_amount * interestRate) / 10000) + _amount;
     }
 
+    function getLendersFromLoanID(uint _loanID) public view returns (Lender[] memory) {
+        return lenders[_loanID];
+    }
+
+    function getLoanDetailsFromLoanID(uint _loanID) public view returns (LoanDetail memory) {
+        return loanDetails[_loanID];
+    }
+
+    function getBorrowersLoanID(address _borrowerAddress) public view returns (uint) {
+        return borrowers[_borrowerAddress];
+    }    
+
     function requestLoan() public {
 /* The borrower connects to the dapp with his wallet
     The borrower specifies the terms of the loan he wants - amount and tenor
@@ -224,10 +236,12 @@ contract SocialLending {
     function payoutDepositsWithInterest(uint256 _loanID) external payable {
         for (uint i=0; i< lenders[_loanID].length; i++) {
             Lender memory lender = lenders[_loanID][i];
-            lender.isRepaid = true;
-            lenders[_loanID][i] = lender;
-            (bool sent,) = msg.sender.call{value: lender.amountToRepay}("");
-            require(sent, "Failed to send Ether");
+            if (!lender.isRepaid) {
+                (bool sent,) = msg.sender.call{value: lender.amountToRepay}("");
+                require(sent, "Failed to send Ether");
+                lender.isRepaid = true;
+                lenders[_loanID][i] = lender;
+            }
         }
     }
 }
