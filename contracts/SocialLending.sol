@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "hardhat/console.sol";
 
 contract SocialLending {
     using Counters for Counters.Counter;
@@ -61,10 +62,14 @@ contract SocialLending {
         owner  = msg.sender;
     }
 
+    function Hello() pure external  returns(string memory) {
+        return "Hello!";
+    }
+
     function createLoan(
         uint128 _loanAmount
     ) external returns (uint loanID) {
-        
+        console.log("loan amount: ", _loanAmount);
         require(_loanAmount > 0, "Loan amount must be greater than zero.");
         uint256 existingLoanID = borrowers[msg.sender];
 
@@ -86,6 +91,7 @@ contract SocialLending {
         loanDetails[loanDetail.loanID] = loanDetail;
         borrowers[msg.sender] = loanDetail.loanID;
         emit LoanRequested(loanDetail.loanID);
+        console.log("loan id: ", loanID);
         return loanID;
     }
 
