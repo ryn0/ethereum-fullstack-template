@@ -67,22 +67,6 @@
       "type": "event"
     },
     {
-<<<<<<< HEAD
-=======
-      "inputs": [],
-      "name": "Hello",
-      "outputs": [
-        {
-          "internalType": "string",
-          "name": "",
-          "type": "string"
-        }
-      ],
-      "stateMutability": "pure",
-      "type": "function"
-    },
-    {
->>>>>>> 72983c780ea93e497c0fad0104d692ec0c975256
       "inputs": [
         {
           "internalType": "uint128",
