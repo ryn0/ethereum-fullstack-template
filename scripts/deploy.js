@@ -3,13 +3,13 @@ const hre = require("hardhat");
 async function main() {
     const [deployer] = await hre.ethers.getSigners();
 
-    const SampleContract = await hre.ethers.getContractFactory("SampleContract");
-    const sampleContract = await SampleContract.deploy();
+    const SocialLendingContract = await hre.ethers.getContractFactory("SocialLending");
+    const socialLendingContract = await SocialLendingContract.deploy();
 
-    await sampleContract.deployed();
-    console.log("Sample Contract address:", sampleContract.address);
+    await socialLendingContract.deployed();
+    console.log("SocialLending Contract address:", socialLendingContract.address);
 
-    saveFrontendFiles(sampleContract);
+    saveFrontendFiles(socialLendingContract);
 
 }
 
@@ -23,14 +23,14 @@ function saveFrontendFiles(contract) {
 
     fs.writeFileSync(
         contractsDir + "/contract-address.json",
-        JSON.stringify({ SampleContract: contract.address }, undefined, 2)
+        JSON.stringify({ SocialLendingContract: contract.address }, undefined, 2)
     );
 
-    const SampleContractArtifact = artifacts.readArtifactSync("SampleContract");
+    const SocialLendingContractArtifact = artifacts.readArtifactSync("SocialLending");
 
     fs.writeFileSync(
-        contractsDir + "/SampleContract.json",
-        JSON.stringify(SampleContractArtifact, null, 2)
+        contractsDir + "/SocialLendingContract.json",
+        JSON.stringify(SocialLendingContractArtifact, null, 2)
     );
 }
 

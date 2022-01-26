@@ -29,11 +29,18 @@ This repository contains a `create-react-app` template that can be used to devel
    npm start
    ```
 
-2. Start a hardhat node
+2. (a) Start a hardhat node
 
    ```bash
    npx hardhat node
    ```
+
+   (b) In a new terminal window, run the following command to deploy the faucet contract on localhost
+
+    `npx hardhat run scripts/deploy.js --network localhost`
+
+   (c) The deployed contract address will be printed to console and will also be automatically be copied to `src/abis/contract-address.json`.
+
 
 3. Connect hardhat node to Metamask
 

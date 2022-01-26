@@ -1,12 +1,16 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '@mui/material/Button';
-import { Typography, Box, Paper } from '@mui/material';
-import { styled } from '@mui/material/styles';
+import { Typography, Box } from '@mui/material';
 import Panel from './Panel';
 import ConnectWithMetaMaskButton from "./ConnectWithMetaMaskButton";
 
-// import abiJson from "./abis/abi.json";
-// import addressJson from "./abis/address.json";
+import abiJson from "./abis/SocialLendingContract.json";
+import addressJson from "./abis/contract-address.json";
+
+import {
+  getSignedContractAndProvider,
+} from "./utils/common.js";
 
 const ButtonLinks = ({ text, onClick, style }) => {
   return (
@@ -19,60 +23,59 @@ const ButtonLinks = ({ text, onClick, style }) => {
 function App() {
   const navigate = useNavigate();
 
-  // const [contractOwner, setContractOwner] = useState("");
-  // const [currentAccount, setCurrentAccount] = useState("");
-  // const [provider, setProvider] = useState(null);
-  // const [contract, setContract] = useState(null);
+  const [contractOwner, setContractOwner] = useState(null);
+  const [currentAccount, setCurrentAccount] = useState(null);
 
-  // const address = addressJson.address;
-  // const contractABI = abiJson.abi;
+  const [provider, setProvider] = useState(null);
+  const [contract, setContract] = useState(null);
 
-  // useEffect(() => {
-  //   checkIfWalletIsConnected(setCurrentAccount);
-  //   updateProviderAndContract(address, contractABI, setProvider, setContract);
-  // }, []);
+  const address = addressJson.SocialLendingContract;
+  const contractABI = abiJson.abi;
 
-  // useEffect(() => {
-  //   getContractOwner(setContractOwner);
-  // }, [currentAccount]);
+  const getContractOwner = async () => {
+    try {
+      const contractAndProvider = getSignedContractAndProvider(address, contractABI);
 
-  // const getContractOwner = async (setContractOwner) => {
-  //   try {
-  //     const contract = getSignedContract(address, contractABI);
+      if (!contractAndProvider) {
+        return;
+      }
 
-  //     if (!contract) {
-  //       return;
-  //     }
+      const [contract, provider] = contractAndProvider;
 
-  //     const owner = await contract.owner();
+      setProvider(provider);
+      setContract(contract);
 
-  //     setContractOwner(owner.toLowerCase());
-  //   } catch (err) {
-  //     console.log(err);
-  //   }
-  // };
+      const owner = await contract.owner();
 
-  // const isOwner = contractOwner !== "" && contractOwner.toLowerCase() === currentAccount.toLowerCase();
-  // const isMetamaskConnected = !!currentAccount;
+      setContractOwner(owner.toLowerCase());
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-  const isMetamaskConnected = false;
+  const isMetamaskConnected = provider && contract && contractOwner;
+
+  useEffect(() => {
+    getContractOwner();
+  }, [currentAccount]);
+
 
   return (
     <Panel>
       <Typography component="div" color="#1c3f71" textTransform="uppercase" fontSize="2rem"><h1>Social Lending App</h1></Typography>
-      
-      {!isMetamaskConnected && (
-        <ConnectWithMetaMaskButton
-          setCurrentAccount={() => {}}
-          isMetamaskConnected={isMetamaskConnected}
-        />
-      )}
+     
+      <ConnectWithMetaMaskButton
+        contractOwner={contractOwner}
+        currentAccount={currentAccount}
+        setCurrentAccount={setCurrentAccount}
+      />
 
-      <Box>
-        <ButtonLinks text="REQUEST A LOAN" style={{ marginRight: '2rem' }} onClick={() => navigate('borrow')} />
-        {/* just for testing remove later */}
-        <ButtonLinks text="LEND" onClick={() => navigate('lend/12345')} />
-      </Box>
+      {isMetamaskConnected && currentAccount? (
+        <Box>
+          <ButtonLinks text="REQUEST A LOAN" style={{ marginRight: '2rem' }} onClick={() => navigate('borrow')} />
+        </Box>
+      ) : null}
+   
     </Panel>
   );
 }
