@@ -26,6 +26,9 @@ contract SocialLending {
     // loanID -> loan backers (note: gets all of the lenders for a given loanID)
     mapping (uint => Lender[]) private lenders;
 
+    // borrower address -> loanIDs of previous loans
+    mapping (address => uint[]) private previousLoans;
+
     Counters.Counter public loanIDCounter;
 
     struct LoanDetail {
@@ -68,7 +71,8 @@ contract SocialLending {
         require(_loanAmount > 0, "Loan amount must be greater than zero.");
         uint256 existingLoanID = borrowers[msg.sender];
 
-        // TODO: consider allowing a new loan if existing loan(s) were paid back
+        // This value is reset to 0 when a previous loan is repaid, so this check
+        // only prevents taking out a second loan while the first is still in progress.
         require(existingLoanID == 0, "Loan already exists for borrower.");
         loanIDCounter.increment();    
         uint256 currentLoanID = loanIDCounter.current();
@@ -168,7 +172,9 @@ contract SocialLending {
                                           loanDetail.loanAmountWithInterest,
                                           LoanStatus.Repaid);
 
-            // TODO: write to a mapping which will include the borrow address and their loan IDs                         
+            previousLoans[loanDetail.borrowerAddress].push(loanDetail.loanID);
+            // borrowers is the list of current loans - clear this one so this user can borrow again:
+            delete borrowers[loanDetail.borrowerAddress];
             emit LoanRepaid(loanDetail.loanID);
         } else {
             revert("Something went wrong, amount repaid is unexpected.");
@@ -185,7 +191,11 @@ contract SocialLending {
 
     function getBorrowersLoanID(address _borrowerAddress) public view returns (uint) {
         return borrowers[_borrowerAddress];
-    }    
+    }
+
+    function getPreviousLoanCount(address _borrowerAddress) public view returns (uint) {
+        return previousLoans[_borrowerAddress].length;
+    }
 
     function requestLoan() public {
 /* The borrower connects to the dapp with his wallet
