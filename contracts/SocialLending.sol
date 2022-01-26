@@ -12,7 +12,6 @@ contract SocialLending {
     uint8 loanDurationInDays = 90;
     
     event LoanRequested(uint loanID);
-    event LoanFunded(uint loanID);
     event LoanNeedsRepayment(uint loanID);
     event LenderDeposit(uint loanID, address lenderAddress);
     event LoanRepaid(uint loanID);
@@ -33,7 +32,6 @@ contract SocialLending {
         uint256 tenor; // repayment date
         uint128 loanAmount;
         uint128 amountDeposited;
-        uint128 amountDisbursed;
         uint128 amountRepaid;
         uint128 interestRate;
         address borrowerAddress;
@@ -51,7 +49,6 @@ contract SocialLending {
     enum LoanStatus {
         New,
         PartiallyFunded,
-        AwaitingDisbursement,
         NeedsRepayment,
         Repaid,
         FailedToRepayByDeadline
@@ -78,7 +75,6 @@ contract SocialLending {
                                             _loanAmount,
                                             0,
                                             0,
-                                            0,
                                             interestRate,
                                             msg.sender,
                                             calculateLoanWithInterest(_loanAmount),
@@ -94,6 +90,12 @@ contract SocialLending {
         require(_depositAmount > 0, "Deposit amount must be greater than zero.");
         LoanDetail memory loanDetail = loanDetails[_loanID];
         require(loanDetail.loanID > 0, "Loan not found.");
+
+        // TODO: We should have a more robust check on this to make *absolutely* sure
+        //       we don't disburse a loan multiple times.
+        require(loanDetail.loanStatus == LoanStatus.New || loanDetail.loanStatus == LoanStatus.PartiallyFunded,
+                "Loan has already been funded.");
+
         loanDetail.amountDeposited += _depositAmount;
         lenders[loanDetail.loanID].push(Lender(msg.sender, _depositAmount, false, calculateLoanWithInterest(_depositAmount)));
         
@@ -103,7 +105,6 @@ contract SocialLending {
                                           loanDetail.tenor,
                                           loanDetail.loanAmount,
                                           loanDetail.amountDeposited,
-                                          loanDetail.amountDisbursed,
                                           loanDetail.amountRepaid,
                                           loanDetail.interestRate,
                                           loanDetail.borrowerAddress,
@@ -116,18 +117,13 @@ contract SocialLending {
                 how fees work right now so just allow any amount greater to or
                 equal to the amount requested
             */
-            loanDetails[loanDetail.loanID] = LoanDetail(
-                                          loanDetail.loanID,
-                                          (block.timestamp + loanDurationInDays * 1 days),
-                                          loanDetail.loanAmount,
-                                          loanDetail.amountDeposited,
-                                          loanDetail.amountDisbursed,
-                                          loanDetail.amountRepaid,
-                                          loanDetail.interestRate,
-                                          loanDetail.borrowerAddress,
-                                          loanDetail.loanAmountWithInterest,
-                                          LoanStatus.AwaitingDisbursement);
-            emit LoanFunded(loanDetail.loanID);
+
+            // TODO: This triggers the disbursement immediately when the loan is fully funded,
+            //       but this means the last depositor will pay the gas to send the funds to
+            //       the borrower. We should probably change this so that the borrower
+            //       needs to trigger disburseLoan (thereby paying their own gas).
+            //       We'll probably need a new LoanStatus to indicate AwaitingDisbursement.
+            disburseLoan(loanDetail);
         } else {
             revert("Something went wrong, amount deposited is unexpected.");
         }
@@ -149,7 +145,6 @@ contract SocialLending {
                                           loanDetail.tenor,
                                           loanDetail.loanAmount,
                                           loanDetail.amountDeposited,
-                                          loanDetail.amountDisbursed,
                                           loanDetail.amountRepaid,
                                           loanDetail.interestRate,
                                           loanDetail.borrowerAddress,
@@ -161,7 +156,6 @@ contract SocialLending {
                                           loanDetail.tenor,
                                           loanDetail.loanAmount,
                                           loanDetail.amountDeposited,
-                                          loanDetail.amountDisbursed,
                                           loanDetail.amountRepaid,
                                           loanDetail.interestRate,
                                           loanDetail.borrowerAddress,
@@ -201,24 +195,27 @@ contract SocialLending {
 */
     }
 
-    function disburseLoan(uint256 _loanID) external {
-        LoanDetail memory loanDetail = loanDetails[_loanID];
-        require(loanDetail.loanAmount > 0, "Loan not found.");
-        require(loanDetail.borrowerAddress == msg.sender, "Only the borrower may receive disbursements.");
-        require(loanDetail.loanStatus != LoanStatus.NeedsRepayment, "The loan has already been disbursed.");
-        require(loanDetail.amountDisbursed == 0, "The loan has already been disbursed.");
-        require(loanDetail.loanStatus == LoanStatus.AwaitingDisbursement, "The loan has not yet been funded.");
-        require(loanDetail.amountDeposited >= loanDetail.loanAmount, "The loan has not yet been funded.");
+    // TODO: Make this external, and require the borrower to initiate it to disburse funds.
+    //       That way, the borrower pays the cost of that gas, not the last depositor.
+    //       The commented-out code represents checks that may be useful when this happens.
+    function disburseLoan(LoanDetail memory loanDetail) private {
+        // (For the below, this would be an external function with uint _loanID as its parameter.)
+        // LoanDetail memory loanDetail = loanDetails[_loanID];
+        // require(loanDetail.loanAmount > 0, "Loan not found.");
+        // require(loanDetail.borrowerAddress == msg.sender, "Only the borrower may receive disbursements.");
+        // require(loanDetail.loanStatus != LoanStatus.NeedsRepayment, "The loan has already been disbursed.");
+        // require(loanDetail.amountDisbursed == 0, "The loan has already been disbursed.");
+        // require(loanDetail.loanStatus == LoanStatus.AwaitingDisbursement, "The loan has not yet been funded.");
+        // require(loanDetail.amountDeposited >= loanDetail.loanAmount, "The loan has not yet been funded.");
 
-        (bool sent,) = msg.sender.call{value: loanDetail.loanAmount}("");
+        (bool sent,) = loanDetail.borrowerAddress.call{value: loanDetail.loanAmount}("");
         require(sent, "Failed to send Ether");
 
-        loanDetails[_loanID] = LoanDetail(
+        loanDetails[loanDetail.loanID] = LoanDetail(
             loanDetail.loanID,
-            loanDetail.tenor,
+            (block.timestamp + loanDurationInDays * 1 days),
             loanDetail.loanAmount,
             loanDetail.amountDeposited,
-            loanDetail.loanAmount,
             loanDetail.amountRepaid,
             loanDetail.interestRate,
             loanDetail.borrowerAddress,
