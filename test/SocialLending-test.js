@@ -167,21 +167,8 @@ describe("SocialLending Contract", () => {
       await SocialLendingContract.connect(borrower1).createLoan(10000);
       await SocialLendingContract.connect(lender1).depositToLoan(loanID, 2500, {value: 2500});
       await SocialLendingContract.connect(lender2).depositToLoan(loanID, 7500, {value: 7500});
-     
-      // TODO: find a way to loop through the array within a mapping without using a try/catch
-      var hasValue = true;
-      var i = 0;
-      do {
-        try {
-          await SocialLendingContract.lenders(loanID, i);
-          i++;
-        }
-        catch {
-          hasValue = false;
-        }
-      } while(hasValue);
-
-      expect(i).to.equal(2);
+      var lenders = await SocialLendingContract.getLendersFromLoanID(loanID);
+      expect(lenders.length).to.equal(2);
     });
 
     it("Should set the tenor to 90 days in the future once loan has requested funds", async function () {
@@ -342,8 +329,8 @@ describe("SocialLending Contract", () => {
       await SocialLendingContract.connect(borrower1).disburseLoan(1);
       await SocialLendingContract.connect(lender1).repayLoan(1, loanAmountWithInterest, {value: loanAmountWithInterest});
       await SocialLendingContract.connect(owner).payoutDepositsWithInterest(1);
-      let lender = await SocialLendingContract.connect(owner).lenders(1, 0);
-      expect(lender.isRepaid).to.equal(true);
+      let lenders = await SocialLendingContract.connect(owner).getLendersFromLoanID(1);
+      expect(lenders[0].isRepaid).to.equal(true);
     });
   });
 });
