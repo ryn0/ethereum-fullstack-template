@@ -56,13 +56,24 @@ function App() {
     }
   };
 
+  const testFunction = async () => {
+     const txn = await contract.Hello();
+     //console.log(id);
+     //const loanID = await txn.wait();
+    console.log(txn);
+  }
+
   const isMetamaskConnected = provider && contract && contractOwner;
 
   useEffect(() => {
     getContractOwner();
   }, [currentAccount]);
 
-
+  // console.log(provider);
+  // console.log(contract);
+  // console.log(contractOwner);
+ 
+//console.log(currentAccount);
   return (
     <Panel>
       <Typography component="div" color="#1c3f71" textTransform="uppercase" fontSize="2rem"><h1>Social Lending App</h1></Typography>
@@ -72,15 +83,17 @@ function App() {
         currentAccount={currentAccount}
         setCurrentAccount={setCurrentAccount}
       />
-
+ 
       {isMetamaskConnected && currentAccount? (
         <Box>
-          <ButtonLinks text="REQUEST A LOAN" style={{ marginRight: '2rem' }} onClick={() => navigate('borrow')} />
+          <ButtonLinks text="REQUEST A LOAN" style={{ marginRight: '2rem' }} onClick={() => testFunction()} />
         </Box>
       ) : null}
    
     </Panel>
   );
+
+
 }
 
 export default App;

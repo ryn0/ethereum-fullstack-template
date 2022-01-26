@@ -99,6 +99,7 @@ contract SocialLending {
         borrowers[msg.sender] = loanDetail.loanID;
         console.log("HH console: loanID", loanID);
         emit LoanRequested(loanDetail.loanID);
+        console.log("loan id: ", loanID);
         return loanID;
     }
 
