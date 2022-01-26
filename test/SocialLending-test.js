@@ -55,7 +55,7 @@ describe("SocialLending Contract", () => {
         ).to.be.revertedWith("Loan amount must be greater than zero.");
     });
 
-    it("Should not allow the same borrower to get more than 1 loan for their address", async function () {
+    it("Should not allow the same borrower to get more than 1 loan at a time", async function () {
       SocialLendingContract.connect(borrower1).createLoan(10000)
       await expect(
           SocialLendingContract.connect(borrower1).createLoan(10000)
@@ -262,6 +262,36 @@ describe("SocialLending Contract", () => {
         SocialLendingContract.connect(borrower1).repayLoan(1, 1070, {value: 1070})
       ).to.emit(SocialLendingContract, "LoanRepaid")
       .withArgs(1);
+    });
+
+    it("Should update history and enable the borrower to borrow again", async function() {
+      await SocialLendingContract.connect(borrower1).createLoan(10000);
+      await SocialLendingContract.connect(borrower2).createLoan(25000);
+      await SocialLendingContract.connect(lender1).depositToLoan(1, 10000, {value: 10000});
+      await expect(
+          await SocialLendingContract.connect(borrower1).getPreviousLoanCount(borrower1.address)
+      ).to.equal(0);
+      await expect(
+          await SocialLendingContract.connect(borrower1).getBorrowersLoanID(borrower1.address)
+      ).to.equal(1);
+
+      await SocialLendingContract.connect(borrower1).repayLoan(1, 10700, {value: 10700});
+
+      await expect(
+          await SocialLendingContract.connect(borrower1).getPreviousLoanCount(borrower1.address)
+      ).to.equal(1);
+      await expect(
+          await SocialLendingContract.connect(borrower1).getBorrowersLoanID(borrower1.address)
+      ).to.equal(0);
+      // ensure that other borrowers' loan data has not been reset
+      await expect(
+          await SocialLendingContract.connect(borrower2).getBorrowersLoanID(borrower2.address)
+      ).to.equal(2);
+
+      await SocialLendingContract.connect(borrower1).createLoan(50000);
+      await expect(
+          await SocialLendingContract.connect(borrower1).getBorrowersLoanID(borrower1.address)
+      ).to.equal(3);
     });
   });
 
