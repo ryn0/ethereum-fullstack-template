@@ -13,4 +13,3 @@ export const getSignedContractAndProvider = (address, contractABI) => {
     return null
 };
 
-

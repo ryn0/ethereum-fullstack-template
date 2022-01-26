@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "hardhat/console.sol";
 
 contract SocialLending {
     using Counters for Counters.Counter;
@@ -15,6 +16,7 @@ contract SocialLending {
     event LoanNeedsRepayment(uint loanID);
     event LenderDeposit(uint loanID, address lenderAddress);
     event LoanRepaid(uint loanID);
+    // event Increment(uint inc);
 
     // ETH borrower address -> loanID (note: assumes only 1 loan per address)
     mapping (address => uint) private borrowers;
@@ -57,14 +59,24 @@ contract SocialLending {
         FailedToRepayByDeadline
     }
 
+    // uint public inc = 88;
+
     constructor() {
+        console.log("HH console: CONSTRUCTOR: ", msg.sender);
         owner  = msg.sender;
     }
+
+    // function testLoan(uint par) public returns (uint test) {
+    //     console.log("param: ", par);
+    //     inc = inc + 1;
+    //     emit Increment(inc);
+    //     return inc;
+    // }
 
     function createLoan(
         uint128 _loanAmount
     ) external returns (uint loanID) {
-        
+        console.log("HH console: _loanAmount: ", _loanAmount);
         require(_loanAmount > 0, "Loan amount must be greater than zero.");
         uint256 existingLoanID = borrowers[msg.sender];
 
@@ -85,6 +97,7 @@ contract SocialLending {
                                             LoanStatus.New);
         loanDetails[loanDetail.loanID] = loanDetail;
         borrowers[msg.sender] = loanDetail.loanID;
+        console.log("HH console: loanID", loanID);
         emit LoanRequested(loanDetail.loanID);
         return loanID;
     }
