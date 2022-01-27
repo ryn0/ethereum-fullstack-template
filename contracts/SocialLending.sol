@@ -131,25 +131,18 @@ contract SocialLending {
                                           loanDetail.borrowerAddress,
                                           loanDetail.loanAmountWithInterest,
                                           LoanStatus.PartiallyFunded);
+            emit LenderDeposit(loanDetail.loanID, msg.sender);
         } else if (loanDetail.amountDeposited >= loanDetail.loanAmount) {
-
-            /* NOTE: it would be better to revert transaction if more than the
-                amount requested is deposited into the loan but it's not clear
-                how fees work right now so just allow any amount greater to or
-                equal to the amount requested
-            */
-
             // TODO: This triggers the disbursement immediately when the loan is fully funded,
             //       but this means the last depositor will pay the gas to send the funds to
             //       the borrower. We should probably change this so that the borrower
             //       needs to trigger disburseLoan (thereby paying their own gas).
             //       We'll probably need a new LoanStatus to indicate AwaitingDisbursement.
+            emit LenderDeposit(loanDetail.loanID, msg.sender);
             disburseLoan(loanDetail);
         } else {
             revert("Unexpected Deposit Amount");
         }
-
-        emit LenderDeposit(loanDetail.loanID, msg.sender);
     }
 
     function repayLoan(uint256 _loanID, uint128 _repaymentAmount) external payable {
