@@ -27,7 +27,11 @@ contract SocialLending {
         uint128 loanAmountWithInterest,
         LoanStatus loanStatus
     );
-    event LenderDetails(Lender lenderDetails);
+    event LenderDetails(
+        address lenderAddress,
+        uint128 depositAmount,
+        bool isRepaid,
+        uint128 amountToRepay);
 
     // ETH borrower address -> loanID (note: assumes only 1 loan per address)
     mapping (address => uint) private borrowers;
@@ -229,20 +233,20 @@ contract SocialLending {
 
     function getLenderDetails(uint _loanID) public {
        
-       // TODO: look at lenders mapping, get all the lenders, then find address of msg.sender
-       // from there, emit event of Lender struct to be read by the UI; make new event
+        for (uint i=0; i< lenders[_loanID].length; i++) {
+            
+            if (lenders[_loanID][i].lenderAddress == msg.sender) {
+                 
+                emit LenderDetails(
+                        lenders[_loanID][i].lenderAddress,
+                        lenders[_loanID][i].depositAmount,
+                        lenders[_loanID][i].isRepaid,
+                        lenders[_loanID][i].amountToRepay);
 
-        // emit LoanDetails(loanDetails[_loanID].loanID,
-        //                  loanDetails[_loanID].tenor,
-        //                  loanDetails[_loanID].loanAmount,
-        //                  loanDetails[_loanID].amountDeposited,
-        //                  loanDetails[_loanID].amountRepaid,
-        //                  loanDetails[_loanID].interestRate,
-        //                  loanDetails[_loanID].borrowerAddress,
-        //                  loanDetails[_loanID].loanAmountWithInterest,
-        //                  loanDetails[_loanID].loanStatus
-        //                  );
-        //return loanDetails[_loanID];
+            }
+        }
+
+        revert("Could not find lender for loan.");
     }
 
     function getBorrowersLoanID(address _borrowerAddress) public view returns (uint) {
