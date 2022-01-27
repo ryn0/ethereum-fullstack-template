@@ -20,7 +20,7 @@ contract SocialLending {
         uint256 loanID,
         uint256 tenor,
         uint128 loanAmount,
-        uint128 amountDeposited, // the amount depoisited by lenders to the loan 
+        uint128 amountDeposited, // the amount deposited by lenders to the loan 
         uint128 amountRepaid, // the amount the borrower has repaid to the loan
         uint128 interestRate,
         address borrowerAddress,
