@@ -234,7 +234,7 @@ contract SocialLending {
     function getLenderDetails(uint _loanID) public {
        
         for (uint i=0; i< lenders[_loanID].length; i++) {
-            
+
             if (lenders[_loanID][i].lenderAddress == msg.sender) {
                  
                 emit LenderDetails(
@@ -245,8 +245,6 @@ contract SocialLending {
 
             }
         }
-
-        revert("Could not find lender for loan.");
     }
 
     function getBorrowersLoanID(address _borrowerAddress) public view returns (uint) {
