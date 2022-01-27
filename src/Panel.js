@@ -7,16 +7,17 @@ const PanelWrapper = styled(Paper)(({ theme }) => ({
   ...theme.typography.body2,
   textAlign: 'center',
   color: theme.palette.text.secondary,
-  height: '80vh',
+  minHeight: '80vh',
   lineHeight: '60px',
   padding: '1rem',
-  marginTop: '5%',
+  marginTop: '2%',
+  marginBottom: '2%',
   background: '#5ae7ab'
 }));
 
 function Panel({ children }) {
   return (
-    <div>
+    <>
       <CssBaseline />
       <Container maxWidth="lg">
         <PanelWrapper elevation={4}>
@@ -25,7 +26,7 @@ function Panel({ children }) {
           </Fragment>
         </PanelWrapper>
       </Container>
-    </div>
+    </>
   );
 }
 

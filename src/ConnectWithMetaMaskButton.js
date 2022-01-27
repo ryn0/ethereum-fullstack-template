@@ -33,7 +33,7 @@ const ConnectWithMetaMaskButton = ({
 	const accountChangedHandler = (newAccount) => {
 		setDefaultAccount(newAccount.length > 0 ? newAccount : null);
     setConnButtonText(newAccount.length > 0 ? MESSAGES.CONNECTED : MESSAGES.NOT_CONNECTED);
-    setCurrentAccount(newAccount);
+    setCurrentAccount(Array.isArray(newAccount) ? newAccount[0]: newAccount);
 	};
 
 	const chainChangedHandler = () => {
@@ -76,18 +76,18 @@ const ConnectWithMetaMaskButton = ({
 	
 
   return (
-    <Box>
+    <Box display="flex" flexDirection="column">
       <Button
         size="large"
         color="info"
         aria-label={connButtonText}
-        component="span"
+        component="div"
         onClick={clickHandler}
         disabled={!!defaultAccount}
       >
         <FoxIcon /><Typography>{connButtonText}</Typography>
       </Button>
-      {defaultAccount && <Box padding={1}><Typography fontWeight="bold">{defaultAccount}</Typography></Box>}
+      {defaultAccount && <Box padding={0} textAlign="center"><Typography fontWeight="bold" fontSize={14} color="#1c3f71">{defaultAccount}</Typography></Box>}
       {errorMessage && <Alert severity="error">{{errorMessage}}</Alert>}
     </Box>
   );
