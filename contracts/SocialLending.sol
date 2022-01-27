@@ -32,6 +32,7 @@ contract SocialLending {
         uint128 depositAmount,
         bool isRepaid,
         uint128 amountToRepay);
+    event LendersRepaid(uint loanID);
 
     // ETH borrower address -> loanID (note: assumes only 1 loan per address)
     mapping (address => uint) private borrowers;
@@ -269,6 +270,7 @@ contract SocialLending {
                 require(sent, "Failed To Send Ether");
             }
         }
+        emit LendersRepaid(_loanID);
     }
     
     function calculateLoanWithInterest(uint128 _amount) private view returns (uint128) {
