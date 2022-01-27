@@ -268,9 +268,6 @@ contract SocialLending {
         // require(loanDetail.loanStatus == LoanStatus.AwaitingDisbursement, "The loan has not yet been funded.");
         // require(loanDetail.amountDeposited >= loanDetail.loanAmount, "The loan has not yet been funded.");
 
-        (bool sent,) = loanDetail.borrowerAddress.call{value: loanDetail.loanAmount}("");
-        require(sent, "Failed to send Ether");
-
         loanDetails[loanDetail.loanID] = LoanDetail(
             loanDetail.loanID,
             (block.timestamp + loanDurationInDays * 1 days),
@@ -282,16 +279,22 @@ contract SocialLending {
             loanDetail.loanAmountWithInterest,
             LoanStatus.NeedsRepayment);
         emit LoanNeedsRepayment(loanDetail.loanID);
+
+        // This must remain at the end to guard against re-entrancy attacks.
+        (bool sent,) = loanDetail.borrowerAddress.call{value: loanDetail.loanAmount}("");
+        require(sent, "Failed to send Ether");
     }
 
     function payoutDepositsWithInterest(uint256 _loanID) external payable {
         for (uint i=0; i< lenders[_loanID].length; i++) {
             Lender memory lender = lenders[_loanID][i];
             if (!lender.isRepaid) {
-                (bool sent,) = msg.sender.call{value: lender.amountToRepay}("");
-                require(sent, "Failed to send Ether");
                 lender.isRepaid = true;
                 lenders[_loanID][i] = lender;
+
+                // This must remain at the end to guard against re-entrancy attacks.
+                (bool sent,) = msg.sender.call{value: lender.amountToRepay}("");
+                require(sent, "Failed to send Ether");
             }
         }
     }
