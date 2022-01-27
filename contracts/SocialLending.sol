@@ -74,18 +74,9 @@ contract SocialLending {
         FailedToRepayByDeadline
     }
 
-    // uint public inc = 88;
-
     constructor() {
         owner  = msg.sender;
     }
-
-    // function testLoan(uint par) public returns (uint test) {
-    //     console.log("param: ", par);
-    //     inc = inc + 1;
-    //     emit Increment(inc);
-    //     return inc;
-    // }
 
     function createLoan(
         uint128 _loanAmount
@@ -206,16 +197,6 @@ contract SocialLending {
     }
 
     function getLoanDetailsFromLoanID(uint _loanID) public {
-        // console.log(loanDetails[_loanID].loanID);
-        // console.log(loanDetails[_loanID].tenor);
-        // console.log(loanDetails[_loanID].loanAmount);
-        // console.log(loanDetails[_loanID].amountDeposited); 
-        // console.log(loanDetails[_loanID].amountRepaid);
-        // console.log(loanDetails[_loanID].interestRate); 
-        // console.log(loanDetails[_loanID].borrowerAddress);
-        // console.log(loanDetails[_loanID].loanAmountWithInterest); 
-        //console.log(loanDetails[_loanID].loanStatus);
- 
 
         emit LoanDetails(loanDetails[_loanID].loanID,
                          loanDetails[_loanID].tenor,
@@ -227,9 +208,7 @@ contract SocialLending {
                          loanDetails[_loanID].loanAmountWithInterest,
                          loanDetails[_loanID].loanStatus
                          );
-        //return loanDetails[_loanID];
     }
-
 
     function getLenderDetails(uint _loanID) public {
        
