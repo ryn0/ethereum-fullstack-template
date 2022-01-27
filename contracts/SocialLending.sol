@@ -27,6 +27,7 @@ contract SocialLending {
         uint128 loanAmountWithInterest,
         LoanStatus loanStatus
     );
+    event LenderDetails(Lender lenderDetails);
 
     // ETH borrower address -> loanID (note: assumes only 1 loan per address)
     mapping (address => uint) private borrowers;
@@ -222,6 +223,25 @@ contract SocialLending {
                          loanDetails[_loanID].loanAmountWithInterest,
                          loanDetails[_loanID].loanStatus
                          );
+        //return loanDetails[_loanID];
+    }
+
+
+    function getLenderDetails(uint _loanID) public {
+       
+       // TODO: look at lenders mapping, get all the lenders, then find address of msg.sender
+       // from there, emit event of Lender struct to be read by the UI; make new event
+
+        // emit LoanDetails(loanDetails[_loanID].loanID,
+        //                  loanDetails[_loanID].tenor,
+        //                  loanDetails[_loanID].loanAmount,
+        //                  loanDetails[_loanID].amountDeposited,
+        //                  loanDetails[_loanID].amountRepaid,
+        //                  loanDetails[_loanID].interestRate,
+        //                  loanDetails[_loanID].borrowerAddress,
+        //                  loanDetails[_loanID].loanAmountWithInterest,
+        //                  loanDetails[_loanID].loanStatus
+        //                  );
         //return loanDetails[_loanID];
     }
 
