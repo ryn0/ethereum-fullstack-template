@@ -81,12 +81,12 @@ contract SocialLending {
     function createLoan(
         uint128 _loanAmount
     ) external returns (uint loanID) {
-        require(_loanAmount > 0, "Loan amount must be greater than zero.");
+        require(_loanAmount > 0, "No Loan Amount");
         uint256 existingLoanID = borrowers[msg.sender];
 
         // This value is reset to 0 when a previous loan is repaid, so this check
         // only prevents taking out a second loan while the first is still in progress.
-        require(existingLoanID == 0, "Loan already exists for borrower.");
+        require(existingLoanID == 0, "Loan Exists");
         loanIDCounter.increment();    
         uint256 currentLoanID = loanIDCounter.current();
         LoanDetail memory loanDetail = LoanDetail(
@@ -107,15 +107,15 @@ contract SocialLending {
     }
 
     function depositToLoan(uint256 _loanID, uint128 _depositAmount) external payable {
-        require(msg.value == _depositAmount, "Amount sent does not equal declared deposit amount.");
-        require(_depositAmount > 0, "Deposit amount must be greater than zero.");
+        require(msg.value == _depositAmount, "Different Repayment Amount");
+        require(_depositAmount > 0, "Invalid Deposit Amount");
         LoanDetail memory loanDetail = loanDetails[_loanID];
-        require(loanDetail.loanID > 0, "Loan not found.");
+        require(loanDetail.loanID > 0, "Loan not found");
 
         // TODO: We should have a more robust check on this to make *absolutely* sure
         //       we don't disburse a loan multiple times.
         require(loanDetail.loanStatus == LoanStatus.New || loanDetail.loanStatus == LoanStatus.PartiallyFunded,
-                "Loan has already been funded.");
+                "Loan Already Funded");
 
         loanDetail.amountDeposited += _depositAmount;
         lenders[loanDetail.loanID].push(Lender(msg.sender, _depositAmount, false, calculateLoanWithInterest(_depositAmount)));
@@ -146,17 +146,17 @@ contract SocialLending {
             //       We'll probably need a new LoanStatus to indicate AwaitingDisbursement.
             disburseLoan(loanDetail);
         } else {
-            revert("Something went wrong, amount deposited is unexpected.");
+            revert("Unexpected Deposit Amount");
         }
 
         emit LenderDeposit(loanDetail.loanID, msg.sender);
     }
 
     function repayLoan(uint256 _loanID, uint128 _repaymentAmount) external payable {
-        require(msg.value == _repaymentAmount, "Amount sent does not equal declared repayment amount.");
-        require(_repaymentAmount > 0, "Repayment amount must be greater than zero.");
+        require(msg.value == _repaymentAmount, "Different Repayment Amount");
+        require(_repaymentAmount > 0, "No Repayment Amount");
         LoanDetail memory loanDetail = loanDetails[_loanID];
-        require(loanDetail.loanID > 0, "Loan not found.");
+        require(loanDetail.loanID > 0, "Loan Not Found");
 
         loanDetail.amountRepaid += _repaymentAmount;
 
@@ -188,7 +188,7 @@ contract SocialLending {
             delete borrowers[loanDetail.borrowerAddress];
             emit LoanRepaid(loanDetail.loanID);
         } else {
-            revert("Something went wrong, amount repaid is unexpected.");
+            revert("Unexpcted Amount Paid");
         }
     }
 
@@ -261,7 +261,7 @@ contract SocialLending {
 
         // This must remain at the end to guard against re-entrancy attacks.
         (bool sent,) = loanDetail.borrowerAddress.call{value: loanDetail.loanAmount}("");
-        require(sent, "Failed to send Ether");
+        require(sent, "Failed To Send Ether");
     }
 
     function payoutDepositsWithInterest(uint256 _loanID) external payable {
@@ -273,7 +273,7 @@ contract SocialLending {
 
                 // This must remain at the end to guard against re-entrancy attacks.
                 (bool sent,) = msg.sender.call{value: lender.amountToRepay}("");
-                require(sent, "Failed to send Ether");
+                require(sent, "Failed To Send Ether");
             }
         }
     }

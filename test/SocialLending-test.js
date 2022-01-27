@@ -51,14 +51,14 @@ describe("SocialLending Contract", () => {
     it("Should only allow valid loan amounts", async function () {
         await expect(
             SocialLendingContract.connect(borrower1).createLoan(0)
-        ).to.be.revertedWith("Loan amount must be greater than zero.");
+        ).to.be.revertedWith("No Loan Amount");
     });
 
     it("Should not allow the same borrower to get more than 1 loan at a time", async function () {
       SocialLendingContract.connect(borrower1).createLoan(10000)
       await expect(
           SocialLendingContract.connect(borrower1).createLoan(10000)
-      ).to.be.revertedWith("Loan already exists for borrower.");
+      ).to.be.revertedWith("Loan Exists");
     });    
 
     it("Should emit LoanRequested event when loan is created", async function () {
@@ -93,27 +93,27 @@ describe("SocialLending Contract", () => {
       await SocialLendingContract.connect(borrower1).createLoan(10000);
       await expect(
           SocialLendingContract.connect(lender1).depositToLoan(1, 100)
-      ).to.be.revertedWith("Amount sent does not equal declared deposit amount");
+      ).to.be.revertedWith("Different Repayment Amount");
     })
 
     it("Should revert if the amount sent doesn't match _depositAmount", async function() {
       await SocialLendingContract.connect(borrower1).createLoan(10000);
       await expect(
           SocialLendingContract.connect(lender1).depositToLoan(1, 100, {value: 95})
-      ).to.be.revertedWith("Amount sent does not equal declared deposit amount");
+      ).to.be.revertedWith("Different Repayment Amount");
     })
 
     it("Should only allow valid deposit amounts", async function () {
       await SocialLendingContract.connect(borrower1).createLoan(10000);
       await expect(
           SocialLendingContract.connect(lender1).depositToLoan(0, 0)
-      ).to.be.revertedWith("Deposit amount must be greater than zero.");
+      ).to.be.revertedWith("Invalid Deposit Amount");
     });
 
     it("Should only allow deposits to an existing loan", async function () {
       await expect(
           SocialLendingContract.connect(lender1).depositToLoan(0, 10000, {value: 10000})
-      ).to.be.revertedWith("Loan not found.");
+      ).to.be.revertedWith("Loan not found");
     });
 
     it("Should revert if the loan is already fully funded", async function() {
@@ -121,7 +121,7 @@ describe("SocialLending Contract", () => {
       await SocialLendingContract.connect(lender1).depositToLoan(1, 10000, {value: 10000});
       await expect(
           SocialLendingContract.connect(lender2).depositToLoan(1, 5000, {value: 5000})
-      ).to.be.revertedWith("Loan has already been funded.");
+      ).to.be.revertedWith("Loan Already Funded");
     });
 
     it("Should update loan details to PartiallyFunded when less than total amount requested is deposited", async function () {
@@ -243,7 +243,7 @@ describe("SocialLending Contract", () => {
       SocialLendingContract.connect(lender1).depositToLoan(1, 10000, {value: 10000})
       await expect(
           SocialLendingContract.connect(lender1).repayLoan(1, 10000)
-      ).to.be.revertedWith("Amount sent does not equal declared repayment amount.");
+      ).to.be.revertedWith("Different Repayment Amount");
     })
 
     it("Should revert if the amount sent doesn't match _repaymentAmount", async function() {
@@ -251,7 +251,7 @@ describe("SocialLending Contract", () => {
       SocialLendingContract.connect(lender1).depositToLoan(1, 10000, {value: 10000})
       await expect(
           SocialLendingContract.connect(lender1).repayLoan(1, 10000, {value: 9999})
-      ).to.be.revertedWith("Amount sent does not equal declared repayment amount.");
+      ).to.be.revertedWith("Different Repayment Amount");
     })
 
     it("Should only allow valid repayment amounts", async function () {
@@ -259,13 +259,13 @@ describe("SocialLending Contract", () => {
       await SocialLendingContract.connect(lender1).depositToLoan(1, 10000, {value: 10000})
       await expect(
         SocialLendingContract.connect(borrower1).repayLoan(1, 0)
-      ).to.be.revertedWith("Repayment amount must be greater than zero.");
+      ).to.be.revertedWith("No Repayment Amount");
     });
 
     it("Should only allow repayment to an existing loan", async function () {
       await expect(
            SocialLendingContract.connect(lender1).repayLoan(0, 10000, {value: 10000})
-      ).to.be.revertedWith("Loan not found.");
+      ).to.be.revertedWith("Loan Not Found");
     });
 
     it("Should keep loan status as NeedsRepayment if amount repaid is less than the amount to repay", async function () {
