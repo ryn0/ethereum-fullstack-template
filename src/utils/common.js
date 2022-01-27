@@ -13,3 +13,14 @@ export const getSignedContractAndProvider = (address, contractABI) => {
     return null
 };
 
+export const displayAddress = (addr = '') => {
+    if (addr === null) return '';
+  
+    const frags = [
+      addr.substr(0, 15),
+      '...',
+      addr.substr(addr.length - 6, addr.length - 1)
+    ];
+  
+    return frags.join('');
+};

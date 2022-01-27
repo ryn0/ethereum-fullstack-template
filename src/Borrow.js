@@ -5,21 +5,10 @@ import { Typography, Box, Grid, TextField, Link, Alert } from '@mui/material';
 import { ethers } from 'ethers';
 import Panel from './Panel';
 import { Web3Context } from './web3Context';
+import { displayAddress } from './utils/common';
 
 const getLoanLink = (loanId) => {
   return `/lend/${loanId}`;
-};
-
-const displayAddress = (addr = '') => {
-  if (addr === null) return '';
-
-  const frags = [
-    addr.substr(0, 15),
-    '...',
-    addr.substr(addr.length - 6, addr.length - 1)
-  ];
-
-  return frags.join('');
 };
 
 function Borrow() {

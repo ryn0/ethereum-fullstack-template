@@ -87,7 +87,7 @@ const ConnectWithMetaMaskButton = ({
       >
         <FoxIcon /><Typography>{connButtonText}</Typography>
       </Button>
-      {defaultAccount && <Box padding={1} textAlign="center"><Typography fontWeight="bold">{defaultAccount}</Typography></Box>}
+      {defaultAccount && <Box padding={0} textAlign="center"><Typography fontWeight="bold" fontSize={14} color="#1c3f71">{defaultAccount}</Typography></Box>}
       {errorMessage && <Alert severity="error">{{errorMessage}}</Alert>}
     </Box>
   );
