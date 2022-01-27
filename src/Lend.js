@@ -34,8 +34,12 @@ function Lend() {
 
   const loadLoanDetails = async () => {
     // TODO populate details from the smart contract for the loanID
+    // call SC for load details with params.loanId
+
     setTimeout(() => {
-      setloanDetails({})
+      setloanDetails({
+        depositedFunds: false
+      })
       setLoader(false);
     }, 2000);
   };
@@ -68,87 +72,122 @@ function Lend() {
       <Loader show={loader} />
 
       {loanDetails ? (
-      <Box sx={{ flexGrow: 1 }}>
-        <Grid container spacing={2}>
-          <Grid item container xs={12} alignItems="center">
-            <Grid item xs={6}>
-              <Typography component="p">ETH Borrower Address:</Typography>
-            </Grid>
-            <Grid item xs={6}>
-              {/* TODO -- set here borrower address */}
-              <TextField
-                style={{ width: '50%' }}
-                hiddenLabel
-                value={displayAddress(currentAccount)}
-                disabled
-              />
-            </Grid>
-          </Grid>
+        <Box sx={{ flexGrow: 1 }}>
+          {!loanDetails?.depositedFunds ? (
+             <Grid container spacing={2}>
+                <Grid item container xs={12} alignItems="center">
+                  <Grid item xs={6}>
+                    <Typography component="p">ETH Borrower Address:</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    {/* TODO -- set here borrower address */}
+                    <TextField
+                      style={{ width: '50%' }}
+                      hiddenLabel
+                      value={displayAddress(currentAccount)}
+                      disabled
+                    />
+                  </Grid>
+                </Grid>
+    
+                <Grid item container xs={12} alignItems="center">
+                  <Grid item xs={6}>
+                    <Typography>USDC Requested:</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      style={{ width: '50%' }}
+                      hiddenLabel
+                      disabled
+                    />
+                  </Grid>
+                </Grid>
+    
+                <Grid item container xs={12} alignItems="center">
+                  <Grid item xs={6}>
+                    <Typography>USDC Amount remaining:</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      style={{ width: '50%' }}
+                      hiddenLabel
+                      disabled
+                    />
+                  </Grid>
+                </Grid>
+    
+                <Grid item container xs={12} alignItems="center">
+                  <Grid item xs={6}>
+                    <Typography>Interest rate:</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      hiddenLabel
+                      style={{ width: '50%' }}
+                      placeholder="7%"
+                      disabled
+                    />
+                  </Grid>
+                </Grid>
+    
+                <Grid item container xs={12} alignItems="center">
+                  <Grid item xs={6}>
+                    <Typography>USDC Amount Contribution:</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      value={contributionAmount ? contributionAmount.toString() : ''}
+                      onChange={(e) => onChange(e, 'contributionAmount')}
+                      style={{ width: '50%' }}
+                      hiddenLabel
+                    />
+                  </Grid>
+                </Grid>
+    
+                <Grid item container xs={12} alignItems="center">
+                
+                <Grid item xs={12}>
+                  <Button sx={{ background: '#1c3f71', color: '#eaf6de' }} variant="contained" disabled={shouldDisableButton()} onClick={loanFunds}>
+                    <Typography>Loan Funds</Typography>
+                  </Button>
+                </Grid>
+             </Grid>
+           </Grid>     
+          ) : null}
 
-          <Grid item container xs={12} alignItems="center">
-            <Grid item xs={6}>
-              <Typography>USDC Requested:</Typography>
-            </Grid>
-            <Grid item xs={6}>
-              <TextField
-                style={{ width: '50%' }}
-                hiddenLabel
-                disabled
-              />
-            </Grid>
-          </Grid>
+          {loanDetails?.depositedFunds ? (
+            <Grid container spacing={2}>
+                <Grid item container xs={12} alignItems="center">
+                  <Grid item xs={6}>
+                    <Typography>Days Remaining:</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      value={90}
+                      style={{ width: '50%' }}
+                      hiddenLabel
+                      disabled
+                    />
+                  </Grid>
+                </Grid>
 
-          <Grid item container xs={12} alignItems="center">
-            <Grid item xs={6}>
-              <Typography>USDC Amount remaining:</Typography>
+                <Grid item container xs={12} alignItems="center">
+                  <Grid item xs={6}>
+                    <Typography>USDC Loan Amount:</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      value={750}
+                      style={{ width: '50%' }}
+                      hiddenLabel
+                      disabled
+                    />
+                  </Grid>
+                </Grid>
             </Grid>
-            <Grid item xs={6}>
-              <TextField
-                style={{ width: '50%' }}
-                hiddenLabel
-                disabled
-              />
-            </Grid>
-          </Grid>
+          ) : null}
 
-          <Grid item container xs={12} alignItems="center">
-            <Grid item xs={6}>
-              <Typography>Interest rate:</Typography>
-            </Grid>
-            <Grid item xs={6}>
-              <TextField
-                hiddenLabel
-                style={{ width: '50%' }}
-                placeholder="7%"
-                disabled
-              />
-            </Grid>
-          </Grid>
-
-          <Grid item container xs={12} alignItems="center">
-            <Grid item xs={6}>
-              <Typography>USDC Amount Contribution:</Typography>
-            </Grid>
-            <Grid item xs={6}>
-              <TextField
-                value={contributionAmount ? contributionAmount.toString() : ''}
-                onChange={(e) => onChange(e, 'contributionAmount')}
-                style={{ width: '50%' }}
-                hiddenLabel
-              />
-            </Grid>
-          </Grid>
-
-          <Grid item container xs={12} alignItems="center">
-            <Grid item xs={12}>
-              <Button sx={{ background: '#1c3f71', color: '#eaf6de' }} variant="contained" disabled={shouldDisableButton()} onClick={loanFunds}>
-                <Typography>Loan Funds</Typography>
-              </Button>
-            </Grid>
-          </Grid>
-
-        </Grid>         
-      </Box>
+        </Box>
       ) : null}
 
       {appError ? (
