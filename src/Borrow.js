@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import { Typography, Box, Grid, TextField, Link, Alert } from '@mui/material';
@@ -8,22 +8,15 @@ import { Web3Context } from './web3Context';
 import { displayAddress } from './utils/common';
 
 const getLoanLink = (loanId) => {
-  return `/lend/${loanId}`;
+  return `${window.location.origin}/lend/${loanId}`
 };
 
 function Borrow() {
   const { contract, currentAccount } = useContext(Web3Context);
 
-  const navigate = useNavigate();
   const [amountRequested, setAmountRequested] = useState('0');
   const [loanId, setloanId] = useState();
   const [appError, setAppError] = useState(null);
-  
-  const routeToLend = () => {
-    navigate(
-      getLoanLink(loanId)
-    );
-  };
 
   const generateLink = async () => {
     try {
@@ -33,6 +26,7 @@ function Borrow() {
       const event = rc.events.find(event => event.event === 'LoanRequested');
       const [loanId] = event.args;
       setloanId(ethers.BigNumber.from(loanId));
+      setAppError(null);
     } catch (err) {
       setAppError(err?.data?.message);
     }
@@ -50,6 +44,11 @@ function Borrow() {
     const res = parseInt(amountRequested) <= 0;
     return res;
   };
+
+  useEffect(() => {
+    setAppError(null);
+    setAmountRequested('0');
+  }, [contract]);
 
   /**
    * TODO -- check if the address already has a loan
@@ -117,14 +116,10 @@ function Borrow() {
 
       {/* generated link */}
       {loanId ? (
-        <Link
-          component="button"
-          variant="body2"
-          onClick={routeToLend}
-        >
-          {getLoanLink(loanId)}
-        </Link>
-      ) : null}
+         <Box padding={3}>
+            <Alert severity="info">{getLoanLink(loanId)}</Alert>
+         </Box>
+        ) : null}
 
       {appError ? (
         <Box padding={3}>
