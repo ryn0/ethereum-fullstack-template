@@ -1,8 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '@mui/material/Button';
-import { Typography, Box, Grid, TextField, Link } from '@mui/material';
-import { styled } from '@mui/material/styles';
+import { Typography, Box, Grid, TextField, Link, Alert } from '@mui/material';
 import { ethers } from 'ethers';
 import Panel from './Panel';
 import { Web3Context } from './web3Context';
@@ -11,20 +10,25 @@ const getLoanLink = (loanId) => {
   return `/lend/${loanId}`;
 };
 
+const displayAddress = (addr = '') => {
+  if (addr === null) return '';
+
+  const frags = [
+    addr.substr(0, 15),
+    '...',
+    addr.substr(addr.length - 6, addr.length - 1)
+  ];
+
+  return frags.join('');
+};
+
 function Borrow() {
-
-  const {
-    provider, setProvider,
-    contract, setContract,
-    contractOwner, setContractOwner,
-    currentAccount, setCurrentAccount
-  } = useContext(Web3Context);
-
-  console.log("contract: ", contract);
+  const { contract, currentAccount } = useContext(Web3Context);
 
   const navigate = useNavigate();
-  const [amountRequested, setAmountRequested] = useState();
+  const [amountRequested, setAmountRequested] = useState('0');
   const [loanId, setloanId] = useState();
+  const [appError, setAppError] = useState(null);
   
   const routeToLend = () => {
     navigate(
@@ -33,14 +37,16 @@ function Borrow() {
   };
 
   const generateLink = async () => {
-    debugger;
-    console.log("generateLink() = contract: ", contract);
-    const tx = await contract.createLoan(amountRequested);
-    const rc = await tx.wait();
-    const event = rc.events.find(event => event.event === 'LoanRequested');
-    const [loanId] = event.args;
-    console.log(ethers.BigNumber.from(loanId))
-    setloanId(ethers.BigNumber.from(loanId));
+    try {
+      console.log("generateLink() = contract: ", contract);
+      const tx = await contract.createLoan(amountRequested);
+      const rc = await tx.wait();
+      const event = rc.events.find(event => event.event === 'LoanRequested');
+      const [loanId] = event.args;
+      setloanId(ethers.BigNumber.from(loanId));
+    } catch (err) {
+      setAppError(err?.data?.message);
+    }
   };
 
   const onChange = (e, field) => {
@@ -49,6 +55,16 @@ function Borrow() {
       setAmountRequested(parseInt(txt));
     }
   };
+
+  const shouldDisableButton = () => {
+    if (!amountRequested) return true;
+    const res = parseInt(amountRequested) <= 0;
+    return res;
+  };
+
+  /**
+   * TODO -- check if the address already has a loan
+   */
 
   return (
     <Panel>
@@ -62,7 +78,7 @@ function Borrow() {
             </Grid>
             <Grid item xs={6}>
               <TextField
-                value={amountRequested}
+                value={amountRequested ? amountRequested.toString() : ''}
                 onChange={(e) => onChange(e, 'amountRequested')}
                 style={{ width: '50%' }}
                 hiddenLabel
@@ -76,8 +92,10 @@ function Borrow() {
             </Grid>
             <Grid item xs={6}>
               <TextField
-                 style={{ width: '50%' }}
+                style={{ width: '50%' }}
                 hiddenLabel
+                value={displayAddress(currentAccount)}
+                disabled
               />
             </Grid>
           </Grid>
@@ -99,13 +117,16 @@ function Borrow() {
 
         </Grid>
 
-        <Box>
-          <Button sx={{ background: '#1c3f71', color: '#eaf6de' }} variant="contained" onClick={generateLink}>
-            <Typography>Generate Loan Link</Typography>
-          </Button>
-        </Box>
+        {!loanId ? (
+          <Box>
+            <Button sx={{ background: '#1c3f71', color: '#eaf6de' }} variant="contained" disabled={shouldDisableButton()} onClick={generateLink}>
+              <Typography>Generate Loan Link</Typography>
+            </Button>
+          </Box>
+        ) : null}
       </Box>
 
+      {/* generated link */}
       {loanId ? (
         <Link
           component="button"
@@ -114,6 +135,12 @@ function Borrow() {
         >
           {getLoanLink(loanId)}
         </Link>
+      ) : null}
+
+      {appError ? (
+        <Box padding={3}>
+          <Alert severity="error">{appError}</Alert>
+        </Box>
       ) : null}
       
     </Panel>
