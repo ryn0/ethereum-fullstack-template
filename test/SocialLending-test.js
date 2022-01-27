@@ -50,7 +50,7 @@ describe("SocialLending Contract", () => {
 
     it("Should only allow valid loan amounts", async function () {
         await expect(
-            SocialLendingContract.connect(owner).createLoan(0)
+            SocialLendingContract.connect(borrower1).createLoan(0)
         ).to.be.revertedWith("Loan amount must be greater than zero.");
     });
 
@@ -63,47 +63,28 @@ describe("SocialLending Contract", () => {
 
     it("Should emit LoanRequested event when loan is created", async function () {
         await expect(
-          SocialLendingContract.connect(sender).createLoan(1000)
+          SocialLendingContract.connect(borrower1).createLoan(1000)
         ).to.emit(SocialLendingContract, "LoanRequested")
         .withArgs(1);
     });
 
-    it("Should get back loan details from borrower's address", async function () {
+    it("Should get back correct loan details once created", async function () {
       await SocialLendingContract.connect(borrower1).createLoan(10000);
-      let loanID = await SocialLendingContract.getBorrowersLoanID(borrower1.address);
-      let loanDetails = await SocialLendingContract.getLoanDetailsFromLoanID(loanID);
 
-      expect(borrower1.address).to.equal(loanDetails.borrowerAddress)
+      await expect(
+        SocialLendingContract.connect(sender).getLoanDetailsFromLoanID(1)
+      ).to.emit(SocialLendingContract, "LoanDetails")
+      .withArgs(1, 0, 10000, 0, 0, 700, borrower1.address, 10700, LoanStatus.New);
     });    
-
-    it("Should set interest rate to 7% more than the loan amount", async function () {
-      await SocialLendingContract.connect(borrower1).createLoan(10000);
-      let loanID = await SocialLendingContract.getBorrowersLoanID(borrower1.address);
-      let loanDetails = await SocialLendingContract.getLoanDetailsFromLoanID(loanID);
-
-      expect(loanDetails.loanAmountWithInterest).to.equal(10700);
-    });  
-
-    it("Should get back correct loan values for first loan if one is created", async function () {
-        await SocialLendingContract.connect(borrower1).createLoan(1000);
-        let loanDetails = await SocialLendingContract.getLoanDetailsFromLoanID(1);
-      
-        expect(loanDetails.loanID).to.equal(1) && expect(loanDetails.loanAmount).to.equal(1000);
-    });
 
     it("Should get back correct loan values for second loan if two are created", async function () {
         await SocialLendingContract.connect(borrower1).createLoan(1000);
         await SocialLendingContract.connect(borrower2).createLoan(10000);
-        let loanDetails2 = await SocialLendingContract.getLoanDetailsFromLoanID(2);
-    
-      expect(loanDetails2.loanID).to.equal(2) && expect(loanDetails2.loanAmount).to.equal(10000);
-    });
-
-    it("Should have a loan status of New after initially created", async function () {
-      await SocialLendingContract.connect(borrower1).createLoan(1000);
-      let loanDetails = await SocialLendingContract.getLoanDetailsFromLoanID(1);
-    
-      expect(loanDetails.loanStatus).to.equal(LoanStatus.New);
+  
+        await expect(
+          SocialLendingContract.connect(sender).getLoanDetailsFromLoanID(2)
+        ).to.emit(SocialLendingContract, "LoanDetails")
+        .withArgs(2, 0, 10000, 0, 0, 700, borrower2.address, 10700, LoanStatus.New);
     });
   });
 
@@ -146,26 +127,37 @@ describe("SocialLending Contract", () => {
     it("Should update loan details to PartiallyFunded when less than total amount requested is deposited", async function () {
       await SocialLendingContract.connect(borrower1).createLoan(10000);
       await SocialLendingContract.connect(lender1).depositToLoan(1, 100, {value: 100});
-      let loanDetails = await SocialLendingContract.connect(owner).getLoanDetailsFromLoanID(1);
-    
-      expect(loanDetails.loanStatus).to.equal(LoanStatus.PartiallyFunded);
+      await expect(
+        SocialLendingContract.connect(sender).getLoanDetailsFromLoanID(1)
+      ).to.emit(SocialLendingContract, "LoanDetails")
+      .withArgs(1, 0, 10000, 100, 0, 700, borrower1.address, 10700, LoanStatus.PartiallyFunded);
+
     });
 
     it("Should update loan details to NeedsRepayment when requested amount is deposited in one deposit", async function () {
       await SocialLendingContract.connect(borrower1).createLoan(10000);
       await SocialLendingContract.connect(lender1).depositToLoan(1, 10000, {value: 10000});
-      let loanDetails = await SocialLendingContract.connect(owner).getLoanDetailsFromLoanID(1);
-    
-      expect(loanDetails.loanStatus).to.equal(LoanStatus.NeedsRepayment);
+      const tx = await SocialLendingContract.connect(sender).getLoanDetailsFromLoanID(1);
+      const receipt = await tx.wait();
+      const loanDetails = await receipt.events?.filter((x)=>{return x.event=='LoanDetails'});
+      await expect(
+        SocialLendingContract.connect(sender).getLoanDetailsFromLoanID(1)
+      ).to.emit(SocialLendingContract, "LoanDetails")
+      .withArgs(1, loanDetails[0].args.tenor, 10000, 10000, 0, 700, borrower1.address, 10700, LoanStatus.NeedsRepayment);
+
     });
 
     it("Should update loan details to NeedsRepayment when requested amount is deposited in multiple deposits", async function () {
       await SocialLendingContract.connect(borrower1).createLoan(10000);
       await SocialLendingContract.connect(lender1).depositToLoan(1, 5000, {value: 5000});
       await SocialLendingContract.connect(lender2).depositToLoan(1, 5000, {value: 5000});
-      let loanDetails = await SocialLendingContract.connect(owner).getLoanDetailsFromLoanID(1);
-    
-      expect(loanDetails.loanStatus).to.equal(LoanStatus.NeedsRepayment);
+      const tx = await SocialLendingContract.connect(sender).getLoanDetailsFromLoanID(1);
+      const receipt = await tx.wait();
+      const loanDetails = await receipt.events?.filter((x)=>{return x.event=='LoanDetails'});
+      await expect(
+        SocialLendingContract.connect(sender).getLoanDetailsFromLoanID(1)
+      ).to.emit(SocialLendingContract, "LoanDetails")
+      .withArgs(1, loanDetails[0].args.tenor, 10000, 10000, 0, 700, borrower1.address, 10700, LoanStatus.NeedsRepayment);
     });
 
     it("Should have the ability to let different accounts fund loan", async function () {
@@ -181,13 +173,16 @@ describe("SocialLending Contract", () => {
     it("Should set the tenor to 90 days in the future once loan has requested funds", async function () {
       await SocialLendingContract.connect(borrower1).createLoan(10000);
       await SocialLendingContract.connect(lender1).depositToLoan(1, 10000, {value: 10000});
-      let loanDetails = await SocialLendingContract.connect(owner).getLoanDetailsFromLoanID(1);
+      const tx = await SocialLendingContract.connect(sender).getLoanDetailsFromLoanID(1);
+      const receipt = await tx.wait();
+      const loanDetails = await receipt.events?.filter((x)=>{return x.event=='LoanDetails'});
+      
       var today = new Date();
       const expectedLoanRepaymentDateMin = new Date();
       expectedLoanRepaymentDateMin.setDate(today.getDate() + 89);
       const expectedLoanRepaymentDateMax = new Date();
       expectedLoanRepaymentDateMax.setDate(today.getDate() + 91);
-      var loanRepaymentDate = new Date(parseInt(loanDetails.tenor * 1000));
+      var loanRepaymentDate = new Date(parseInt(loanDetails[0].args.tenor * 1000));
 
       // NOTE: due to block.timestamp, we are just saying it's between 89 and 91 days
       expect(loanRepaymentDate).to.lessThan(expectedLoanRepaymentDateMax).and.
@@ -262,21 +257,30 @@ describe("SocialLending Contract", () => {
     });
 
     it("Should keep loan status as NeedsRepayment if amount repaid is less than the amount to repay", async function () {
-      await SocialLendingContract.connect(borrower1).createLoan(1000);
-      await SocialLendingContract.connect(lender1).depositToLoan(1, 1000, {value: 1000});
+      await SocialLendingContract.connect(borrower1).createLoan(10000);
+      await SocialLendingContract.connect(lender1).depositToLoan(1, 10000, {value: 10000});
       await SocialLendingContract.connect(borrower1).repayLoan(1, 500, {value: 500});
-      let loanDetails = await SocialLendingContract.connect(borrower1).getLoanDetailsFromLoanID(1);
-
-      expect(loanDetails.loanStatus).to.equal(LoanStatus.NeedsRepayment);
+      const tx = await SocialLendingContract.connect(sender).getLoanDetailsFromLoanID(1);
+      const receipt = await tx.wait();
+      const loanDetails = await receipt.events?.filter((x)=>{return x.event=='LoanDetails'});
+      await expect(
+        SocialLendingContract.connect(sender).getLoanDetailsFromLoanID(1)
+      ).to.emit(SocialLendingContract, "LoanDetails")
+      .withArgs(1, loanDetails[0].args.tenor, 10000, 10000, 500, 700, borrower1.address, 10700, LoanStatus.NeedsRepayment);;
     });
 
     it("Should set loan status to Repaid if amount repaid was what was due", async function () {
-      await SocialLendingContract.connect(borrower1).createLoan(1000);
-      await SocialLendingContract.connect(lender1).depositToLoan(1, 1000, {value: 1000});
-      await SocialLendingContract.connect(borrower1).repayLoan(1, 1070, {value: 1070});
-      let loanDetails = await SocialLendingContract.connect(borrower1).getLoanDetailsFromLoanID(1);
-
-      expect(loanDetails.loanStatus).to.equal(LoanStatus.Repaid);
+      await SocialLendingContract.connect(borrower1).createLoan(10000);
+      await SocialLendingContract.connect(lender1).depositToLoan(1, 10000, {value: 10000});
+      await SocialLendingContract.connect(borrower1).repayLoan(1, 10700, {value: 10700});
+    
+      const tx = await SocialLendingContract.connect(sender).getLoanDetailsFromLoanID(1);
+      const receipt = await tx.wait();
+      const loanDetails = await receipt.events?.filter((x)=>{return x.event=='LoanDetails'});
+      await expect(
+        SocialLendingContract.connect(sender).getLoanDetailsFromLoanID(1)
+      ).to.emit(SocialLendingContract, "LoanDetails")
+      .withArgs(1, loanDetails[0].args.tenor, 10000, 10000, 10700, 700, borrower1.address, 10700, LoanStatus.Repaid);;
     });
 
     it("Should emit event that loan was repaid if it was paid back fully", async function () {

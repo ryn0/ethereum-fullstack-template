@@ -79,3 +79,10 @@ Your environment will have following set up:
 2. run `npm run deploy`
 3. check your github repo's `main` branch to see if it has the latest commit
 4. click on github-pages on the bottom right to see the deployment is triggered or not
+---
+
+1. `npx hardhat node`
+
+2. `npx hardhat run scripts/deploy.js --network localhost`
+
+3. `npm start`

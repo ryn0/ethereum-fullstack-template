@@ -16,7 +16,17 @@ contract SocialLending {
     event LoanNeedsRepayment(uint loanID);
     event LenderDeposit(uint loanID, address lenderAddress);
     event LoanRepaid(uint loanID);
-    // event Increment(uint inc);
+    event LoanDetails(
+        uint256 loanID,
+        uint256 tenor,
+        uint128 loanAmount,
+        uint128 amountDeposited,
+        uint128 amountRepaid,
+        uint128 interestRate,
+        address borrowerAddress,
+        uint128 loanAmountWithInterest,
+        LoanStatus loanStatus
+    );
 
     // ETH borrower address -> loanID (note: assumes only 1 loan per address)
     mapping (address => uint) private borrowers;
@@ -62,7 +72,6 @@ contract SocialLending {
     // uint public inc = 88;
 
     constructor() {
-        console.log("HH console: CONSTRUCTOR: ", msg.sender);
         owner  = msg.sender;
     }
 
@@ -76,7 +85,6 @@ contract SocialLending {
     function createLoan(
         uint128 _loanAmount
     ) external returns (uint loanID) {
-        console.log("HH console: _loanAmount: ", _loanAmount);
         require(_loanAmount > 0, "Loan amount must be greater than zero.");
         uint256 existingLoanID = borrowers[msg.sender];
 
@@ -97,10 +105,9 @@ contract SocialLending {
                                             LoanStatus.New);
         loanDetails[loanDetail.loanID] = loanDetail;
         borrowers[msg.sender] = loanDetail.loanID;
-        console.log("HH console: loanID", loanID);
+
         emit LoanRequested(loanDetail.loanID);
-        console.log("loan id: ", loanID);
-        return loanID;
+        return loanDetail.loanID;
     }
 
     function depositToLoan(uint256 _loanID, uint128 _depositAmount) external payable {
@@ -193,8 +200,29 @@ contract SocialLending {
         return lenders[_loanID];
     }
 
-    function getLoanDetailsFromLoanID(uint _loanID) public view returns (LoanDetail memory) {
-        return loanDetails[_loanID];
+    function getLoanDetailsFromLoanID(uint _loanID) public {
+        // console.log(loanDetails[_loanID].loanID);
+        // console.log(loanDetails[_loanID].tenor);
+        // console.log(loanDetails[_loanID].loanAmount);
+        // console.log(loanDetails[_loanID].amountDeposited); 
+        // console.log(loanDetails[_loanID].amountRepaid);
+        // console.log(loanDetails[_loanID].interestRate); 
+        // console.log(loanDetails[_loanID].borrowerAddress);
+        // console.log(loanDetails[_loanID].loanAmountWithInterest); 
+        //console.log(loanDetails[_loanID].loanStatus);
+ 
+
+        emit LoanDetails(loanDetails[_loanID].loanID,
+                         loanDetails[_loanID].tenor,
+                         loanDetails[_loanID].loanAmount,
+                         loanDetails[_loanID].amountDeposited,
+                         loanDetails[_loanID].amountRepaid,
+                         loanDetails[_loanID].interestRate,
+                         loanDetails[_loanID].borrowerAddress,
+                         loanDetails[_loanID].loanAmountWithInterest,
+                         loanDetails[_loanID].loanStatus
+                         );
+        //return loanDetails[_loanID];
     }
 
     function getBorrowersLoanID(address _borrowerAddress) public view returns (uint) {
@@ -203,20 +231,6 @@ contract SocialLending {
 
     function getPreviousLoanCount(address _borrowerAddress) public view returns (uint) {
         return previousLoans[_borrowerAddress].length;
-    }
-
-    function requestLoan() public {
-/* The borrower connects to the dapp with his wallet
-    The borrower specifies the terms of the loan he wants - amount and tenor
-    Specifies the ethereum address of the backers
-   Calls function createLoan()
-   Calls a function to create a unique link that can be shared with the backer 
-*/
-    }
-
-    function createUniqueLoanLink() public {
-/* A request to be sent to the specified ethereum address? Or a regular link that can be shared on social media or emailed to the backers to request to connect and fund for the loan  
-*/
     }
 
     // TODO: Make this external, and require the borrower to initiate it to disburse funds.

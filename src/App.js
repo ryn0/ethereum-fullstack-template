@@ -69,11 +69,6 @@ function App() {
     getContractOwner();
   }, [currentAccount]);
 
-  // console.log(provider);
-  // console.log(contract);
-  // console.log(contractOwner);
- 
-//console.log(currentAccount);
   return (
     <Panel>
       <Typography component="div" color="#1c3f71" textTransform="uppercase" fontSize="2rem"><h1>Social Lending App</h1></Typography>
