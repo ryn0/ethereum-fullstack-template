@@ -1,10 +1,10 @@
 {
   "files": {
-    "main.js": "/ethereum-fullstack-template/static/js/main.21344e47.js",
+    "main.js": "/ethereum-fullstack-template/static/js/main.87586c49.js",
     "index.html": "/ethereum-fullstack-template/index.html",
-    "main.21344e47.js.map": "/ethereum-fullstack-template/static/js/main.21344e47.js.map"
+    "main.87586c49.js.map": "/ethereum-fullstack-template/static/js/main.87586c49.js.map"
   },
   "entrypoints": [
-    "static/js/main.21344e47.js"
+    "static/js/main.87586c49.js"
   ]
 }
