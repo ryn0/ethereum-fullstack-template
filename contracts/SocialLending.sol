@@ -9,7 +9,7 @@ contract SocialLending {
     using Counters for Counters.Counter;
 
     address public owner;
-    uint128 interestRate = 700; // 7.00%
+    uint16 interestRate = 700; // 7.00%
     uint8 loanDurationInDays = 90;
     
     event LoanRequested(uint loanID);
@@ -22,7 +22,7 @@ contract SocialLending {
         uint128 loanAmount,
         uint128 amountDeposited, // the amount deposited by lenders to the loan 
         uint128 amountRepaid, // the amount the borrower has repaid to the loan
-        uint128 interestRate,
+        uint16 interestRate,
         address borrowerAddress,
         uint128 loanAmountWithInterest,
         LoanStatus loanStatus
@@ -54,7 +54,7 @@ contract SocialLending {
         uint128 loanAmount;
         uint128 amountDeposited;
         uint128 amountRepaid;
-        uint128 interestRate;
+        uint16 interestRate;
         address borrowerAddress;
         uint128 loanAmountWithInterest;
         LoanStatus loanStatus;
