@@ -130,6 +130,7 @@ contract SocialLending {
             loanDetail.amountDeposited = _newDepositAmount;
             loanDetail.loanStatus = LoanStatus.NeedsRepayment;
             emit LenderDeposit(loanDetail.loanID, msg.sender);
+            disburseLoan(loanDetail);
         } else {
             revert("Unexpected Deposit Amount");
         }

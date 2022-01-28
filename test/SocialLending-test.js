@@ -182,7 +182,7 @@ describe("SocialLending Contract", () => {
       expect(lenders.length).to.equal(2);
     });
 
-    /*
+
     it("Should set the tenor to 90 days in the future once loan has requested funds", async function () {
       await SocialLendingContract.connect(borrower1).createLoan(10000);
       await SocialLendingContract.connect(lender1).depositToLoan(1, 10000, {value: 10000});
@@ -201,7 +201,7 @@ describe("SocialLending Contract", () => {
       expect(loanRepaymentDate).to.lessThan(expectedLoanRepaymentDateMax).and.
                                  greaterThan(expectedLoanRepaymentDateMin);
     });
-    */
+
 
     it("Should emit LenderDeposit event when a lender deposits", async function () {
       await SocialLendingContract.connect(borrower1).createLoan(1000);
