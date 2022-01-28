@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import * as ReactDOM from 'react-dom';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { Typography, Box, Grid, TextField, Link, Alert } from '@mui/material';
 import App from './App';
 import Borrow from './Borrow';
 import Lend from './Lend';
@@ -9,6 +10,7 @@ import Repay from './Repay';
 import ConnectWithMetaMaskButton from "./ConnectWithMetaMaskButton";
 import { Web3Context } from './web3Context';
 import {
+  getErrMessage,
   getSignedContractAndProvider,
 } from "./utils/common.js";
 
@@ -25,6 +27,8 @@ const Wrapper = () => {
   const [contractOwner, setContractOwner] = useState(null);
   const [currentAccount, setCurrentAccount] = useState(null);
 
+  const [appError, setAppError] = useState(null);
+
   const getWeb3Context = () => {
     return {
       provider, setProvider,
@@ -38,6 +42,7 @@ const Wrapper = () => {
   const contractABI = abiJson.abi;
 
   const getContractOwner = async () => {
+    console.info('getContractOwner() gets called...');
     try {
       const contractAndProvider = getSignedContractAndProvider(address, contractABI);
 
@@ -51,17 +56,23 @@ const Wrapper = () => {
       setContract(contract);
 
       const owner = await contract.owner();
-
       setContractOwner(owner.toLowerCase());
 
     } catch (err) {
       console.error(err);
+
+      setAppError(getErrMessage(err));
     }
   };
 
   useEffect(() => {
     getContractOwner();
   }, [currentAccount]);
+
+  console.log('\n-----');
+  console.log('account connected: ', currentAccount);
+  console.log('contractOwner: ', contractOwner);
+  console.log('contract: ', contract?.address);
 
   return (
     <ThemeProvider theme={lightTheme}>
@@ -71,6 +82,12 @@ const Wrapper = () => {
           currentAccount={currentAccount}
           setCurrentAccount={setCurrentAccount}
         />
+
+      {appError ? (
+        <Box padding={3}>
+          <Alert severity="error"><Typography>{JSON.stringify(appError)}</Typography></Alert>
+        </Box>
+      ) : null}
 
         <BrowserRouter>
           <Routes>

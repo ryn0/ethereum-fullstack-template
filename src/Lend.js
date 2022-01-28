@@ -5,7 +5,7 @@ import { Typography, Box, Grid, TextField, Alert } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { ethers } from 'ethers';
 import Panel from './Panel';
-import { displayAddress } from './utils/common';
+import { displayAddress, getErrMessage } from './utils/common';
 import { Web3Context } from './web3Context';
 import Loader from './Loader';
 
@@ -40,16 +40,10 @@ function Lend() {
       console.log("loanFunds() = contract: ", contract);
       const tx = await contract.getLenderDetails(params.loanId);
       const rc = await tx.wait();
-      const event = rc.events.find(event => event.event === 'LoanDetails');
-      const loanDetails = event.args;
-      
-      const borrowerAddress = loanDetails[6];
-      const loanAmount = loanDetails[2];
-      const amountDeposited = loanDetails[3];
-      const amountRemaining = loanAmount - amountDeposited;
-      const interestRate = loanDetails[5];
-      
-      return { borrowerAddress, loanAmount, amountRemaining, interestRate };
+      const event = await rc.events?.filter((x)=> x.event == 'LoanDetails');
+      const eventArgs = event[0].args;
+      debugger;
+      return eventArgs;
 
     } catch (err) {
       throw Error(err?.message || err);
@@ -59,33 +53,46 @@ function Lend() {
   const getLenderDetails = async () => {
     try {
       console.log("loanFunds() = contract: ", contract);
-      const tx = await contract.getLenderDetails(params.loanId);
+      const tx = await contract.getLenderDetails(parseInt(params.loanId));
       const rc = await tx.wait();
-      const event = rc.events.find(event => event.event === 'LenderDetails');
-      const [lenderAddress] = event.args;
-      return ethers.BigNumber.from(lenderAddress);
-    } catch (err) {
+
+      // TODO: GETTING NO EVENTS here
+      console.log('rc: ', rc.events);
+
       debugger;
+
+      const event = rc.events.find(event => event.event === 'LenderDetails');
+      console.log("event: ", event);
+
+      // const event = await rc.events?.filter((x)=> x.event == 'LenderDetails');
+      // const eventArgs = event[0].args;
+      // console.log("eventArgs: ", eventArgs);
+
+      debugger;
+      return 100;
+      // return ethers.BigNumber.from(eventArgs.lenderAddress);
+    } catch (err) {
       throw Error(err?.message || err);
     }
   };
 
   const loadDetails = async () => {
     try {
+      setLoader(true);
+      debugger;
       const lenderAddress = await getLenderDetails();
-
-      if (!lenderAddress) { // lender has not deposited funds for this loan
-        const { borrowerAddress, loanAmount, amountRemaining, interestRate } = await getLoanDetailsFromLoanID();
-        setloanDetails({ borrowerAddress, loanAmount, amountRemaining, interestRate });
-        setShowLoanFunds(true);
-      } else {
-        setLenderAlreadyDeposited(true);
-        setShowLoanFunds(false);
-        console.log(`Lender ${currentAccount} has already deposited funds for loanId ${params.loanId}`);
-      }
-
+      debugger;
+      // if (!lenderAddress) { // lender has not deposited funds for this loan
+      //   const { borrowerAddress, loanAmount, amountRemaining, interestRate } = await getLoanDetailsFromLoanID();
+      //   setloanDetails({ borrowerAddress, loanAmount, amountRemaining, interestRate });
+      //   setShowLoanFunds(true);
+      // } else {
+      //   setLenderAlreadyDeposited(true);
+      //   setShowLoanFunds(false);
+      //   console.log(`Lender ${currentAccount} has already deposited funds for loanId ${params.loanId}`);
+      // }
     } catch (err) {
-      setAppError(err?.message);
+      setAppError(getErrMessage(err));
     }
 
     setLoader(false);
@@ -94,37 +101,19 @@ function Lend() {
   const loanFunds = async () => {
     try {
       console.log("loanFunds() = contract: ", contract);
-      const loanId = 0; // get from loanDetails
       const depositAmount = contributionAmount; // massage as needed
-
-      const tx = await contract.depositToLoan(loanId, depositAmount);
+      const tx = await contract.depositToLoan(params.loanId, depositAmount);
       const rc = await tx.wait();
-      const event = rc.events.find(event => event.event === 'LoanRequested');
-      // const [loanId] = event.args;
-      // setloanId(ethers.BigNumber.from(loanId));
-      console.log('event.args: ', event.args);
+      const event = await rc.events?.filter((x)=> x.event == 'LoanRequested');
+      const eventArgs = event[0].args;
+      setLenderAlreadyDeposited(eventArgs.loanId);
     } catch (err) {
-      setAppError(err?.data?.message);
-    }
-  };
-
-  const loanDetailsTest = async () => {
-    try {
-      console.log("getLoanDetailsFromLoanID() = contract: ", contract);
-      const loanId = 1; // get from loanDetails
-      const depositAmount = contributionAmount; // massage as needed
-      const tx = await contract.getLoanDetailsFromLoanID(loanId);
-      const rc = await tx.wait();
-      const event = await rc.events?.filter((x)=>{return x.event=='LoanDetails'});
-      console.log("Borrower address: " + event[0].args.borrowerAddress);
-    } catch (err) {
-      setAppError(err?.data?.message);
+      setAppError(getErrMessage(err));
     }
   };
 
   useEffect(() => {
     if (contract) {
-      setLoader(true);
       loadDetails();
     }
   }, [contract]);
@@ -215,11 +204,6 @@ function Lend() {
                   <Button sx={{ background: '#1c3f71', color: '#eaf6de' }} variant="contained" disabled={shouldDisableButton()} onClick={loanFunds}>
                     <Typography>Loan Funds</Typography>
                   </Button>
-
-                  <Button sx={{ background: '#1c3f71', color: '#eaf6de' }} variant="contained" onClick={loanDetailsTest}>
-                    <Typography>Test Loan Funds</Typography>
-                  </Button>
-
                 </Grid>
              </Grid>
            </Grid>     
