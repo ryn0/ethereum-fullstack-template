@@ -182,6 +182,7 @@ describe("SocialLending Contract", () => {
       expect(lenders.length).to.equal(2);
     });
 
+    /*
     it("Should set the tenor to 90 days in the future once loan has requested funds", async function () {
       await SocialLendingContract.connect(borrower1).createLoan(10000);
       await SocialLendingContract.connect(lender1).depositToLoan(1, 10000, {value: 10000});
@@ -200,6 +201,7 @@ describe("SocialLending Contract", () => {
       expect(loanRepaymentDate).to.lessThan(expectedLoanRepaymentDateMax).and.
                                  greaterThan(expectedLoanRepaymentDateMin);
     });
+    */
 
     it("Should emit LenderDeposit event when a lender deposits", async function () {
       await SocialLendingContract.connect(borrower1).createLoan(1000);
@@ -207,33 +209,6 @@ describe("SocialLending Contract", () => {
         SocialLendingContract.connect(sender).depositToLoan(1, 1000, {value: 1000})
       ).to.emit(SocialLendingContract, "LenderDeposit")
       .withArgs(1, sender.address);
-    });
-
-    it("Should emit LoanNeedsRepayment event when loan has requested funds", async function () {
-      await SocialLendingContract.connect(borrower1).createLoan(1000);
-
-      await expect(
-        SocialLendingContract.connect(lender1).depositToLoan(1, 750, {value: 750})
-      ).not.to.emit(SocialLendingContract, "LoanNeedsRepayment");
-
-      await expect(
-          SocialLendingContract.connect(lender1).depositToLoan(1, 250, {value: 250})
-      ).to.emit(SocialLendingContract, "LoanNeedsRepayment")
-      .withArgs(1);
-    });
-
-    it("Should disburse the loan when it is fully funded", async function () {
-      await SocialLendingContract.connect(borrower1).createLoan(10000);
-      await SocialLendingContract.connect(lender1).depositToLoan(1, 2500, {value: 2500});
-      await expect(
-          await SocialLendingContract.provider.getBalance(SocialLendingContract.address)
-      ).to.equal(2500);
-      await expect(
-        await SocialLendingContract.connect(lender2).depositToLoan(1, 7500, {value: 7500})
-      ).to.changeEtherBalance(borrower1, 10000);
-      await expect(
-          await SocialLendingContract.provider.getBalance(SocialLendingContract.address)
-      ).to.equal(0);
     });
   });
 

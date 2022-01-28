@@ -90,7 +90,8 @@ contract SocialLending {
         require(existingLoanID == 0, "Loan Exists");
         loanIDCounter.increment();    
         uint256 currentLoanID = loanIDCounter.current();
-        LoanDetail memory loanDetail = LoanDetail(
+
+        loanDetails[currentLoanID] = LoanDetail(
                                             currentLoanID,
                                             0,
                                             _loanAmount,
@@ -100,17 +101,17 @@ contract SocialLending {
                                             msg.sender,
                                             calculateLoanWithInterest(_loanAmount),
                                             LoanStatus.New);
-        loanDetails[loanDetail.loanID] = loanDetail;
-        borrowers[msg.sender] = loanDetail.loanID;
+        borrowers[msg.sender] = currentLoanID;
 
-        emit LoanRequested(loanDetail.loanID);
-        return loanDetail.loanID;
+        emit LoanRequested(currentLoanID);
+
+        return currentLoanID;
     }
 
     function depositToLoan(uint256 _loanID, uint128 _depositAmount) external payable {
         require(msg.value == _depositAmount, "Different Repayment Amount");
         require(_depositAmount > 0, "Invalid Deposit Amount");
-        LoanDetail memory loanDetail = loanDetails[_loanID];
+        LoanDetail storage loanDetail = loanDetails[_loanID];
         require(loanDetail.loanID > 0, "Loan not found");
 
         // TODO: We should have a more robust check on this to make *absolutely* sure
@@ -118,33 +119,21 @@ contract SocialLending {
         require(loanDetail.loanStatus == LoanStatus.New || loanDetail.loanStatus == LoanStatus.PartiallyFunded,
                 "Loan Already Funded");
 
-        loanDetail.amountDeposited += _depositAmount;
+        uint128 _newDepositAmount = loanDetail.amountDeposited + _depositAmount;
         lenders[loanDetail.loanID].push(Lender(msg.sender, _depositAmount, false, calculateLoanWithInterest(_depositAmount)));
         
-        if (loanDetail.loanAmount > loanDetail.amountDeposited){
-            loanDetails[loanDetail.loanID] = LoanDetail(
-                                          loanDetail.loanID,
-                                          loanDetail.tenor,
-                                          loanDetail.loanAmount,
-                                          loanDetail.amountDeposited,
-                                          loanDetail.amountRepaid,
-                                          loanDetail.interestRate,
-                                          loanDetail.borrowerAddress,
-                                          loanDetail.loanAmountWithInterest,
-                                          LoanStatus.PartiallyFunded);
+        if (loanDetail.loanAmount > _newDepositAmount) {
+            loanDetail.amountDeposited = _newDepositAmount;
+            loanDetail.loanStatus = LoanStatus.PartiallyFunded;
             emit LenderDeposit(loanDetail.loanID, msg.sender);
-        } else if (loanDetail.amountDeposited >= loanDetail.loanAmount) {
-            // TODO: This triggers the disbursement immediately when the loan is fully funded,
-            //       but this means the last depositor will pay the gas to send the funds to
-            //       the borrower. We should probably change this so that the borrower
-            //       needs to trigger disburseLoan (thereby paying their own gas).
-            //       We'll probably need a new LoanStatus to indicate AwaitingDisbursement.
+        } else if (_newDepositAmount == loanDetail.loanAmount ) {
+            loanDetail.amountDeposited = _newDepositAmount;
+            loanDetail.loanStatus = LoanStatus.NeedsRepayment;
             emit LenderDeposit(loanDetail.loanID, msg.sender);
-            disburseLoan(loanDetail);
         } else {
             revert("Unexpected Deposit Amount");
         }
-    }
+}
 
     function repayLoan(uint256 _loanID, uint128 _repaymentAmount) external payable {
         require(msg.value == _repaymentAmount, "Different Repayment Amount");
