@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import { Typography, Box, Grid, TextField, Alert } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import { ethers } from 'ethers';
 import Panel from './Panel';
 import { displayAddress } from './utils/common';
 import { Web3Context } from './web3Context';
@@ -56,6 +57,20 @@ function Lend() {
       // const [loanId] = event.args;
       // setloanId(ethers.BigNumber.from(loanId));
       console.log('event.args: ', event.args);
+    } catch (err) {
+      setAppError(err?.data?.message);
+    }
+  };
+
+  const loanDetailsTest = async () => {
+    try {
+      console.log("getLoanDetailsFromLoanID() = contract: ", contract);
+      const loanId = 1; // get from loanDetails
+      const depositAmount = contributionAmount; // massage as needed
+      const tx = await contract.getLoanDetailsFromLoanID(loanId);
+      const rc = await tx.wait();
+      const event = await rc.events?.filter((x)=>{return x.event=='LoanDetails'});
+      console.log("Borrower address: " + event[0].args.borrowerAddress);
     } catch (err) {
       setAppError(err?.data?.message);
     }
@@ -150,6 +165,11 @@ function Lend() {
                   <Button sx={{ background: '#1c3f71', color: '#eaf6de' }} variant="contained" disabled={shouldDisableButton()} onClick={loanFunds}>
                     <Typography>Loan Funds</Typography>
                   </Button>
+
+                  <Button sx={{ background: '#1c3f71', color: '#eaf6de' }} variant="contained" onClick={loanDetailsTest}>
+                    <Typography>Test Loan Funds</Typography>
+                  </Button>
+
                 </Grid>
              </Grid>
            </Grid>     
