@@ -64,12 +64,17 @@ function Lend() {
 
   const loanDetailsTest = async () => {
     try {
+
       console.log("getLoanDetailsFromLoanID() = contract: ", contract);
-      const loanId = 1; // get from loanDetails
+      const loanId = window.location.href.split("/").pop();
+      console.log(loanId );
       const depositAmount = contributionAmount; // massage as needed
       const tx = await contract.getLoanDetailsFromLoanID(loanId);
       const rc = await tx.wait();
       const event = await rc.events?.filter((x)=>{return x.event=='LoanDetails'});
+     
+      // setloanDetails(loanDetails);
+      console.log(loanDetails.loanAmount);
       console.log("Borrower address: " + event[0].args.borrowerAddress);
     } catch (err) {
       setAppError(err?.data?.message);
@@ -95,7 +100,7 @@ function Lend() {
                     <Typography component="p">ETH Borrower Address:</Typography>
                   </Grid>
                   <Grid item xs={6}>
-                    {/* TODO -- set here borrower address */}
+                    {!loanDetails?.borrowerAddress}
                     <TextField
                       style={{ width: '50%' }}
                       hiddenLabel
@@ -112,7 +117,8 @@ function Lend() {
                   <Grid item xs={6}>
                     <TextField
                       style={{ width: '50%' }}
-                      hiddenLabel
+                      hiddenLabel                      
+                      value={loanDetails.amountRequested}
                       disabled
                     />
                   </Grid>
