@@ -172,6 +172,19 @@ describe("SocialLending Contract", () => {
       .withArgs(sender.address, 10000, false, 10700);
     });
 
+    it("Should emit lender details of connected account 2", async function () {
+      await SocialLendingContract.connect(borrower1).createLoan(10000);
+      await SocialLendingContract.connect(sender).depositToLoan(1, 500, {value: 500});
+      await SocialLendingContract.connect(sender).depositToLoan(1, 500, {value: 500});
+      const tx = await SocialLendingContract.connect(sender).getLoanDetailsFromLoanID(1);
+      const receipt = await tx.wait();
+      const loanDetails = await receipt.events?.filter((x)=>{return x.event=='LenderDetails'});
+      await expect(
+        SocialLendingContract.connect(sender).getLenderDetails(1)
+      ).to.emit(SocialLendingContract, "LenderDetails")
+      .withArgs(sender.address, 500, false, 535);
+    });
+
     it("Should have the ability to let different accounts fund loan", async function () {
       let loanID = 1;
 
