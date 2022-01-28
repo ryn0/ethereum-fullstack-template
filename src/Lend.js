@@ -108,6 +108,20 @@ function Lend() {
     }
   };
 
+  const loanDetailsTest = async () => {
+    try {
+      console.log("getLoanDetailsFromLoanID() = contract: ", contract);
+      const loanId = 1; // get from loanDetails
+      const depositAmount = contributionAmount; // massage as needed
+      const tx = await contract.getLoanDetailsFromLoanID(loanId);
+      const rc = await tx.wait();
+      const event = await rc.events?.filter((x)=>{return x.event=='LoanDetails'});
+      console.log("Borrower address: " + event[0].args.borrowerAddress);
+    } catch (err) {
+      setAppError(err?.data?.message);
+    }
+  };
+
   useEffect(() => {
     if (contract) {
       setLoader(true);
@@ -143,7 +157,7 @@ function Lend() {
     
                 <Grid item container xs={12} alignItems="center">
                   <Grid item xs={6}>
-                    <Typography>USDC Requested:</Typography>
+                    <Typography>ETH Requested:</Typography>
                   </Grid>
                   <Grid item xs={6}>
                     <TextField
@@ -156,7 +170,7 @@ function Lend() {
     
                 <Grid item container xs={12} alignItems="center">
                   <Grid item xs={6}>
-                    <Typography>USDC Amount remaining:</Typography>
+                    <Typography>ETH Amount remaining:</Typography>
                   </Grid>
                   <Grid item xs={6}>
                     <TextField
@@ -183,7 +197,7 @@ function Lend() {
     
                 <Grid item container xs={12} alignItems="center">
                   <Grid item xs={6}>
-                    <Typography>USDC Amount Contribution:</Typography>
+                    <Typography>ETH Amount Contribution:</Typography>
                   </Grid>
                   <Grid item xs={6}>
                     <TextField
@@ -201,6 +215,11 @@ function Lend() {
                   <Button sx={{ background: '#1c3f71', color: '#eaf6de' }} variant="contained" disabled={shouldDisableButton()} onClick={loanFunds}>
                     <Typography>Loan Funds</Typography>
                   </Button>
+
+                  <Button sx={{ background: '#1c3f71', color: '#eaf6de' }} variant="contained" onClick={loanDetailsTest}>
+                    <Typography>Test Loan Funds</Typography>
+                  </Button>
+
                 </Grid>
              </Grid>
            </Grid>     
@@ -224,7 +243,7 @@ function Lend() {
 
                 <Grid item container xs={12} alignItems="center">
                   <Grid item xs={6}>
-                    <Typography>USDC Loan Amount:</Typography>
+                    <Typography>ETH Loan Amount:</Typography>
                   </Grid>
                   <Grid item xs={6}>
                     <TextField

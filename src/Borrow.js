@@ -62,7 +62,7 @@ function Borrow() {
         <Grid container spacing={2}>
           <Grid item container xs={12} alignItems="center">
             <Grid item xs={6}>
-              <Typography component="p">Total amount of USDC requested:</Typography>
+              <Typography component="p">Total amount of ETH requested:</Typography>
             </Grid>
             <Grid item xs={6}>
               <TextField
