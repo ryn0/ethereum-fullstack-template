@@ -22,7 +22,7 @@ function Repay() {
         <Grid container spacing={2}>
           <Grid item container xs={12} alignItems="center">
             <Grid item xs={6}>
-              <Typography component="p">Total amount of USDC loaned:</Typography>
+              <Typography component="p">Total amount of ETH loaned:</Typography>
             </Grid>
             <Grid item xs={6}>
               <TextField
@@ -34,7 +34,7 @@ function Repay() {
 
           <Grid item container xs={12} alignItems="center">
             <Grid item xs={6}>
-              <Typography>Total repayment of USDC:</Typography>
+              <Typography>Total repayment of ETH:</Typography>
             </Grid>
             <Grid item xs={6}>
               <TextField
@@ -46,7 +46,7 @@ function Repay() {
 
           <Grid item container xs={12} alignItems="center">
             <Grid item xs={6}>
-              <Typography>Total USDC still needed:</Typography>
+              <Typography>Total ETH still needed:</Typography>
             </Grid>
             <Grid item xs={6}>
               <TextField

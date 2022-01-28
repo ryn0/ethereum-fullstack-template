@@ -92,7 +92,7 @@ function Lend() {
     
                 <Grid item container xs={12} alignItems="center">
                   <Grid item xs={6}>
-                    <Typography>USDC Requested:</Typography>
+                    <Typography>ETH Requested:</Typography>
                   </Grid>
                   <Grid item xs={6}>
                     <TextField
@@ -105,7 +105,7 @@ function Lend() {
     
                 <Grid item container xs={12} alignItems="center">
                   <Grid item xs={6}>
-                    <Typography>USDC Amount remaining:</Typography>
+                    <Typography>ETH Amount remaining:</Typography>
                   </Grid>
                   <Grid item xs={6}>
                     <TextField
@@ -132,7 +132,7 @@ function Lend() {
     
                 <Grid item container xs={12} alignItems="center">
                   <Grid item xs={6}>
-                    <Typography>USDC Amount Contribution:</Typography>
+                    <Typography>ETH Amount Contribution:</Typography>
                   </Grid>
                   <Grid item xs={6}>
                     <TextField
@@ -173,7 +173,7 @@ function Lend() {
 
                 <Grid item container xs={12} alignItems="center">
                   <Grid item xs={6}>
-                    <Typography>USDC Loan Amount:</Typography>
+                    <Typography>ETH Loan Amount:</Typography>
                   </Grid>
                   <Grid item xs={6}>
                     <TextField

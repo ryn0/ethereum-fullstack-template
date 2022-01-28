@@ -336,7 +336,8 @@ describe("SocialLending Contract", () => {
     });
   });
 
-  /* Bring these back when the borrower needs to trigger the disbursement:
+  /*
+   //Bring these back when the borrower needs to trigger the disbursement:
 
   describe("Disburse Loan", function () {
     it("Should revert if the loan ID is invalid", async function () {
@@ -390,8 +391,7 @@ describe("SocialLending Contract", () => {
       ).to.be.revertedWith("The loan has already been disbursed.");
     });
   });
-
-  */
+*/
 
   describe("Payout Deposits With Interest", function () {
     
