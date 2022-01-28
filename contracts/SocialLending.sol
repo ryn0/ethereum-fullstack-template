@@ -130,6 +130,7 @@ contract SocialLending {
             loanDetail.amountDeposited = _newDepositAmount;
             loanDetail.loanStatus = LoanStatus.NeedsRepayment;
             emit LenderDeposit(loanDetail.loanID, msg.sender);
+            disburseLoan(loanDetail);
         } else {
             revert("Unexpected Deposit Amount");
         }
@@ -194,8 +195,8 @@ contract SocialLending {
     }
 
     function getLenderDetails(uint _loanID) public {
-       
-        for (uint i=0; i< lenders[_loanID].length; i++) {
+
+        for (uint i = 0; i < lenders[_loanID].length; i++) {
 
             if (lenders[_loanID][i].lenderAddress == msg.sender) {
                  
@@ -204,7 +205,7 @@ contract SocialLending {
                         lenders[_loanID][i].depositAmount,
                         lenders[_loanID][i].isRepaid,
                         lenders[_loanID][i].amountToRepay);
-
+                break;
             }
         }
     }

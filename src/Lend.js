@@ -134,7 +134,7 @@ function Lend() {
                     <Typography component="p">ETH Borrower Address:</Typography>
                   </Grid>
                   <Grid item xs={6}>
-                    {/* TODO -- set here borrower address */}
+                    {!loanDetails?.borrowerAddress}
                     <TextField
                       style={{ width: '50%' }}
                       hiddenLabel
@@ -151,7 +151,8 @@ function Lend() {
                   <Grid item xs={6}>
                     <TextField
                       style={{ width: '50%' }}
-                      hiddenLabel
+                      hiddenLabel                      
+                      value={loanDetails.amountRequested}
                       disabled
                     />
                   </Grid>
