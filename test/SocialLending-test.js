@@ -93,14 +93,14 @@ describe("SocialLending Contract", () => {
       await SocialLendingContract.connect(borrower1).createLoan(10000);
       await expect(
           SocialLendingContract.connect(lender1).depositToLoan(1, 100)
-      ).to.be.revertedWith("Different Repayment Amount");
+      ).to.be.revertedWith("Different Deposit Amount");
     })
 
     it("Should revert if the amount sent doesn't match _depositAmount", async function() {
       await SocialLendingContract.connect(borrower1).createLoan(10000);
       await expect(
           SocialLendingContract.connect(lender1).depositToLoan(1, 100, {value: 95})
-      ).to.be.revertedWith("Different Repayment Amount");
+      ).to.be.revertedWith("Different Deposit Amount");
     })
 
     it("Should only allow valid deposit amounts", async function () {
