@@ -109,7 +109,7 @@ contract SocialLending {
     }
 
     function depositToLoan(uint256 _loanID, uint128 _depositAmount) external payable {
-        require(msg.value == _depositAmount, "Different Repayment Amount");
+        require(msg.value == _depositAmount, "Different Deposit Amount");
         require(_depositAmount > 0, "Invalid Deposit Amount");
         LoanDetail storage loanDetail = loanDetails[_loanID];
         require(loanDetail.loanID > 0, "Loan not found");
