@@ -23,13 +23,20 @@ function App() {
 
   const navigate = useNavigate();
 
-  const isMetamaskConnected = provider && contract && contractOwner;
+  const isMetamaskConnected = provider && contract && contractOwner && currentAccount;
+
+  console.warn(`
+    provider: ${!!provider}
+    contract: ${!!contract}
+    contractOwner: ${!!contractOwner}
+    currentAccount: ${!!currentAccount}
+  `);
 
   return (
     <Panel>
       <Typography component="div" color="#1c3f71" textTransform="uppercase" fontSize="2rem"><h1>Social Lending App</h1></Typography>
      
-      {isMetamaskConnected && currentAccount? (
+      {isMetamaskConnected ? (
         <Box>
           <ButtonLinks text="REQUEST A LOAN" style={{ marginRight: '2rem' }} onClick={() => navigate('borrow')} />
         </Box>

@@ -5,7 +5,7 @@ import { Typography, Box, Grid, TextField, Link, Alert } from '@mui/material';
 import { ethers } from 'ethers';
 import Panel from './Panel';
 import { Web3Context } from './web3Context';
-import { displayAddress } from './utils/common';
+import { displayAddress, getErrMessage } from './utils/common';
 
 const getLoanLink = (loanId) => {
   return `${window.location.origin}/lend/${loanId}`
@@ -28,7 +28,7 @@ function Borrow() {
       setloanId(ethers.BigNumber.from(loanId));
       setAppError(null);
     } catch (err) {
-      setAppError(err?.data?.message);
+      setAppError(getErrMessage(err));
     }
   };
 

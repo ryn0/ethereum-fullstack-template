@@ -7,6 +7,7 @@ export const getSignedContractAndProvider = (address, contractABI) => {
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
         const contract = new ethers.Contract(address, contractABI, signer);
+
         return [contract, provider];
     }
 
@@ -23,4 +24,11 @@ export const displayAddress = (addr = '') => {
     ];
   
     return frags.join('');
+};
+
+export const getErrMessage = (errObj) => {
+    if (errObj?.data?.message) return errObj?.data?.message;
+    if (errObj?.message) return errObj?.message;
+    debugger;
+    return JSON.stringify(errObj);
 };
