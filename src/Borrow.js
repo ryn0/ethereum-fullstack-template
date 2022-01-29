@@ -22,7 +22,7 @@ function Borrow() {
     try {
       console.log("generateLink() = contract: ", contract);
       const tx = await contract.createLoan(
-        ethers.utils.parseEther(amountRequested.toFixed(2)),
+        ethers.utils.parseEther(amountRequested),
       );
       const rc = await tx.wait();
       const event = rc.events.find(event => event.event === 'LoanRequested');
@@ -37,13 +37,14 @@ function Borrow() {
   const onChange = (e, field) => {
     const txt = e.target.value;
     if (field === 'amountRequested') {
-      setAmountRequested(parseInt(txt));
+      setAmountRequested(txt);
     }
   };
 
   const shouldDisableButton = () => {
     if (!amountRequested) return true;
-    const res = parseInt(amountRequested) <= 0;
+    if (amountRequested.slice(-1) === '.') return true;
+    const res = parseFloat(amountRequested) <= 0;
     return res;
   };
 
