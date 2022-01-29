@@ -1,18 +1,45 @@
+import { useState, useContext, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Button from '@mui/material/Button';
-import { Typography, Box, Grid, TextField } from '@mui/material';
+import { Typography, Box, Grid, TextField, Alert } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import { ethers } from 'ethers';
 import Panel from './Panel';
+import { displayAddress } from './utils/common';
+import { Web3Context } from './web3Context';
+import Loader from './Loader';
 
 
 function Repay() {
   let params = useParams();
+  const [contributionAmount, setContributionAmount] = useState('0');
+
+  
+  const shouldDisableButton = () => {
+    if (!contributionAmount) return true;
+    const res = parseInt(contributionAmount) <= 0;
+    return res;
+  };
+
+const repayLoan = async () => {
+  try {
+
+    console.log("repayLoan() = contract: ", contract);
+    const loanId = window.location.href.split("/").pop();
+    console.log(loanId);
+    const repaymentAmont = contributionAmount; // massage as needed
+    const tx = await contract.repayLoan(loanId, repaymentAmont);
+    const rc = await tx.wait();
+    const event = await rc.events?.filter((x)=>{return x.event=='LoanDetails'});
+   
+    // TODO: check that this is: 'Repaid' and that the amount please interest has been sent to lender
+    console.log("Loan Status: " + event[0].args.loanStatus);
+  } catch (err) {
+    setAppError(err?.data?.message);
+  }
+};
 
   const navigate = useNavigate();
-  
-  const buttonClick = () => {
-
-  };
 
   return (
     <Panel>
@@ -38,7 +65,9 @@ function Repay() {
             </Grid>
             <Grid item xs={6}>
               <TextField
-                 style={{ width: '50%' }}
+                value={contributionAmount ? contributionAmount.toString() : ''}
+                onChange={(e) => onChange(e, 'contributionAmount')}
+                style={{ width: '50%' }}
                 hiddenLabel
               />
             </Grid>
@@ -74,8 +103,8 @@ function Repay() {
         </Grid>
 
         <Box>
-          <Button sx={{ background: '#1c3f71', color: '#eaf6de' }} variant="contained" onClick={buttonClick}>
-            <Typography>Action?</Typography>
+          <Button sx={{ background: '#1c3f71', color: '#eaf6de' }} variant="contained"  disabled={shouldDisableButton()}  onClick={repayLoan}>
+            <Typography>Repay Loan</Typography>
           </Button>
         </Box>
       </Box>
