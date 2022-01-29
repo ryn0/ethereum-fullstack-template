@@ -258,11 +258,18 @@ contract SocialLending {
         for (uint i=0; i< lenders[_loanID].length; i++) {
             Lender memory lender = lenders[_loanID][i];
             if (!lender.isRepaid) {
+
+                 (bool sent,) = lender.lenderAddress.call{value: lender.amountToRepay}("");
+
+//payable(msg.sender).transfer(howMuchToBeSent);
+
                 lender.isRepaid = true;
+
                 lenders[_loanID][i] = lender;
 //console.log
+ 
                 // This must remain at the end to guard against re-entrancy attacks.
-                (bool sent,) = msg.sender.call{value: lender.amountToRepay}("");
+               // (bool sent,) = msg.sender.call{value: lender.amountToRepay}("");
                 require(sent, "Failed To Send Ether");
             }
         }

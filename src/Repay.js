@@ -23,14 +23,14 @@ function Repay() {
   const onChange = (e, field) => {
     const txt = e.target.value;
     if (field === 'contributionAmount') {
-      setContributionAmount(parseInt(txt));
+      setContributionAmount(parseFloat(txt));
     }
   };
 
 
   const shouldDisableButton = () => {
     if (!contributionAmount) return true;
-    const res = parseInt(contributionAmount) <= 0;
+    const res = parseFloat(contributionAmount) <= 0;
     return res;
   };
 
@@ -42,17 +42,18 @@ const repayLoan = async () => {
     // TODO - this function is throwing error
     const msg_value_amount = ethers.utils.parseEther(depositAmount); 
     console.log(msg_value_amount);
-   // const tx = await contract.depositToLoan(parseInt(params.loanId),depositAmount,{value: msg_value_amount});
-  // const tx = await contract.depositToLoan(parseInt(params.loanId), '100000000000000000000',{value: msg_value_amount});
+   // const tx = await contract.depositToLoan(parseFloat(params.loanId),depositAmount,{value: msg_value_amount});
+  // const tx = await contract.depositToLoan(parseFloat(params.loanId), '100000000000000000000',{value: msg_value_amount});
     // const tx = await contract.depositToLoan(
-    //   parseInt(params.loanId),
+    //   parseFloat(params.loanId),
     //   depositAmount
     // );
  
-    const options = { value: ethers.utils.parseEther(depositAmount.toFixed(2)) };
+    const options = { value: ethers.utils.parseEther(depositAmount) };
+ 
     // TODO - this function is throwing error
     const tx = await contract.payoutDepositsWithInterest(
-      parseInt(params.loanId),
+      parseFloat(params.loanId),
       options
     );
 

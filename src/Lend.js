@@ -25,19 +25,19 @@ function Lend() {
   const onChange = (e, field) => {
     const txt = e.target.value;
     if (field === 'contributionAmount') {
-      setContributionAmount(parseInt(txt));
+      setContributionAmount(parseFloat(txt));
     }
   };
 
   const shouldDisableButton = () => {
     if (!contributionAmount) return true;
-    const res = parseInt(contributionAmount) <= 0;
+    const res = parseFloat(contributionAmount) <= 0;
     return res;
   };
 
   const getLoanDetailsFromLoanID = async () => {
     try {
-      const tx = await contract.getLoanDetailsFromLoanID(parseInt(params.loanId));
+      const tx = await contract.getLoanDetailsFromLoanID(parseFloat(params.loanId));
       const rc = await tx.wait();
 
       const event = await rc.events?.filter((x)=> x.event == 'LoanDetails');
@@ -51,7 +51,7 @@ function Lend() {
 
   const getLenderDetails = async () => {
     try {
-      const tx = await contract.getLenderDetails(parseInt(params.loanId));
+      const tx = await contract.getLenderDetails(parseFloat(params.loanId));
       const rc = await tx.wait();
 
       const event = await rc.events?.filter((x)=> x.event == 'LenderDetails');
@@ -96,7 +96,7 @@ function Lend() {
       const options = { value: ethers.utils.parseEther(depositAmount.toFixed(2)) };
       // TODO - this function is throwing error
       const tx = await contract.depositToLoan(
-        parseInt(params.loanId),
+        parseFloat(params.loanId),
         ethers.utils.parseEther(depositAmount.toFixed(2)),
         options
       );
