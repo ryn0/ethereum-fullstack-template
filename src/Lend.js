@@ -37,13 +37,11 @@ function Lend() {
 
   const getLoanDetailsFromLoanID = async () => {
     try {
-      console.log("loanFunds() = contract: ", contract);
       const tx = await contract.getLoanDetailsFromLoanID(parseInt(params.loanId));
       const rc = await tx.wait();
 
       const event = await rc.events?.filter((x)=> x.event == 'LoanDetails');
       const eventArgs = event[0].args;
-      debugger;
       return eventArgs;
 
     } catch (err) {
@@ -53,7 +51,6 @@ function Lend() {
 
   const getLenderDetails = async () => {
     try {
-      console.log("loanFunds() = contract: ", contract);
       const tx = await contract.getLenderDetails(parseInt(params.loanId));
       const rc = await tx.wait();
 
@@ -68,17 +65,13 @@ function Lend() {
   const loadDetails = async () => {
     try {
       setLoader(true);
-      debugger;
       const lenderAddress = await getLenderDetails();
-      debugger;
       if (lenderAddress === '0x0000000000000000000000000000000000000000') { // lender has not deposited funds for this loan
         const { borrowerAddress, loanAmount, amountDeposited, interestRate } = await getLoanDetailsFromLoanID();
         const amountRemaining = ethers.BigNumber.from(loanAmount) - ethers.BigNumber.from(amountDeposited);
-        console.log('amountRemaining: ', amountRemaining);
-        debugger;
         setloanDetails({
           borrowerAddress,
-          loanAmount,
+          loanAmount: ethers.BigNumber.from(loanAmount),
           amountRemaining,
           interestRate: (interestRate / 100).toFixed(2)
         });
@@ -86,7 +79,7 @@ function Lend() {
       } else {
         setLenderAlreadyDeposited(true);
         setShowLoanFunds(false);
-        console.log(`Lender ${currentAccount} has already deposited funds for loanId ${params.loanId}`);
+        console.warn(`Lender ${currentAccount} has already deposited funds for loanId ${params.loanId}`);
       }
     } catch (err) {
       setAppError(getErrMessage(err));
@@ -97,9 +90,12 @@ function Lend() {
 
   const loanFunds = async () => {
     try {
-      console.log("loanFunds() = contract: ", contract);
       const depositAmount = contributionAmount; // massage as needed
-      const tx = await contract.depositToLoan(params.loanId, depositAmount);
+      // TODO - this function is throwing error
+      const tx = await contract.depositToLoan(
+        parseInt(params.loanId),
+        depositAmount
+      );
       const rc = await tx.wait();
       const event = await rc.events?.filter((x)=> x.event == 'LoanRequested');
       const eventArgs = event[0].args;
@@ -149,7 +145,7 @@ function Lend() {
                     <TextField
                       style={{ width: '50%' }}
                       hiddenLabel                      
-                      value={loanDetails.amountRequested}
+                      value={loanDetails.loanAmount}
                       disabled
                     />
                   </Grid>
@@ -162,6 +158,7 @@ function Lend() {
                   <Grid item xs={6}>
                     <TextField
                       style={{ width: '50%' }}
+                      value={loanDetails.amountRemaining}
                       hiddenLabel
                       disabled
                     />

@@ -7,8 +7,7 @@ export const getSignedContractAndProvider = (address, contractABI) => {
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
         const contract = new ethers.Contract(address, contractABI, signer);
-        
-        debugger;
+
         return [contract, provider];
     }
 
