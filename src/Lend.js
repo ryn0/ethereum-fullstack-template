@@ -38,8 +38,9 @@ function Lend() {
   const getLoanDetailsFromLoanID = async () => {
     try {
       console.log("loanFunds() = contract: ", contract);
-      const tx = await contract.getLenderDetails(params.loanId);
+      const tx = await contract.getLoanDetailsFromLoanID(parseInt(params.loanId));
       const rc = await tx.wait();
+
       const event = await rc.events?.filter((x)=> x.event == 'LoanDetails');
       const eventArgs = event[0].args;
       debugger;
@@ -56,21 +57,9 @@ function Lend() {
       const tx = await contract.getLenderDetails(parseInt(params.loanId));
       const rc = await tx.wait();
 
-      // TODO: GETTING NO EVENTS here
-      console.log('rc: ', rc.events);
-
-      debugger;
-
-      const event = rc.events.find(event => event.event === 'LenderDetails');
-      console.log("event: ", event);
-
-      // const event = await rc.events?.filter((x)=> x.event == 'LenderDetails');
-      // const eventArgs = event[0].args;
-      // console.log("eventArgs: ", eventArgs);
-
-      debugger;
-      return 100;
-      // return ethers.BigNumber.from(eventArgs.lenderAddress);
+      const event = await rc.events?.filter((x)=> x.event == 'LenderDetails');
+      const eventArgs = event[0].args;
+      return eventArgs.lenderAddress;
     } catch (err) {
       throw Error(err?.message || err);
     }
@@ -82,15 +71,23 @@ function Lend() {
       debugger;
       const lenderAddress = await getLenderDetails();
       debugger;
-      // if (!lenderAddress) { // lender has not deposited funds for this loan
-      //   const { borrowerAddress, loanAmount, amountRemaining, interestRate } = await getLoanDetailsFromLoanID();
-      //   setloanDetails({ borrowerAddress, loanAmount, amountRemaining, interestRate });
-      //   setShowLoanFunds(true);
-      // } else {
-      //   setLenderAlreadyDeposited(true);
-      //   setShowLoanFunds(false);
-      //   console.log(`Lender ${currentAccount} has already deposited funds for loanId ${params.loanId}`);
-      // }
+      if (lenderAddress === '0x0000000000000000000000000000000000000000') { // lender has not deposited funds for this loan
+        const { borrowerAddress, loanAmount, amountDeposited, interestRate } = await getLoanDetailsFromLoanID();
+        const amountRemaining = ethers.BigNumber.from(loanAmount) - ethers.BigNumber.from(amountDeposited);
+        console.log('amountRemaining: ', amountRemaining);
+        debugger;
+        setloanDetails({
+          borrowerAddress,
+          loanAmount,
+          amountRemaining,
+          interestRate: (interestRate / 100).toFixed(2)
+        });
+        setShowLoanFunds(true);
+      } else {
+        setLenderAlreadyDeposited(true);
+        setShowLoanFunds(false);
+        console.log(`Lender ${currentAccount} has already deposited funds for loanId ${params.loanId}`);
+      }
     } catch (err) {
       setAppError(getErrMessage(err));
     }
