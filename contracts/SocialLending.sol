@@ -260,7 +260,7 @@ contract SocialLending {
             if (!lender.isRepaid) {
                 lender.isRepaid = true;
                 lenders[_loanID][i] = lender;
-
+//console.log
                 // This must remain at the end to guard against re-entrancy attacks.
                 (bool sent,) = msg.sender.call{value: lender.amountToRepay}("");
                 require(sent, "Failed To Send Ether");
