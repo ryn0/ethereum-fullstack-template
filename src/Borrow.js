@@ -21,7 +21,9 @@ function Borrow() {
   const generateLink = async () => {
     try {
       console.log("generateLink() = contract: ", contract);
-      const tx = await contract.createLoan(amountRequested);
+      const tx = await contract.createLoan(
+        ethers.utils.parseEther(amountRequested.toFixed(2)),
+      );
       const rc = await tx.wait();
       const event = rc.events.find(event => event.event === 'LoanRequested');
       const [loanId] = event.args;
