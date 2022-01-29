@@ -80,7 +80,7 @@ function Lend() {
         setShowLoanFunds(true);
       } else {
         setLenderAlreadyDeposited(true);
-        setShowLoanFunds(false);
+        setShowLoanFunds(true);
         console.warn(`Lender ${currentAccount} has already deposited funds for loanId ${params.loanId}`);
       }
     } catch (err) {
@@ -134,7 +134,7 @@ function Lend() {
                     <TextField
                       style={{ width: '50%' }}
                       hiddenLabel
-                      value={displayAddress(currentAccount)}
+                      value={displayAddress(loanDetails?.borrowerAddress)}
                       disabled
                     />
                   </Grid>
@@ -229,7 +229,7 @@ function Lend() {
                   </Grid>
                   <Grid item xs={6}>
                     <TextField
-                      value={750}
+                      value={ethers.utils.formatEther(loanDetails?.loanAmount?.toString())}
                       style={{ width: '50%' }}
                       hiddenLabel
                       disabled
