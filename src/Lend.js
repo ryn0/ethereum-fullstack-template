@@ -69,12 +69,14 @@ function Lend() {
       if (lenderAddress === '0x0000000000000000000000000000000000000000') { // lender has not deposited funds for this loan
         const { borrowerAddress, loanAmount, amountDeposited, interestRate } = await getLoanDetailsFromLoanID();
         const amountRemaining = ethers.BigNumber.from(loanAmount) - ethers.BigNumber.from(amountDeposited);
+
         setloanDetails({
           borrowerAddress,
           loanAmount: ethers.BigNumber.from(loanAmount),
           amountRemaining,
           interestRate: (interestRate / 100).toFixed(2)
         });
+
         setShowLoanFunds(true);
       } else {
         setLenderAlreadyDeposited(true);
@@ -91,15 +93,17 @@ function Lend() {
   const loanFunds = async () => {
     try {
       const depositAmount = contributionAmount; // massage as needed
+      const options = { value: ethers.utils.parseEther(depositAmount.toFixed(2)) };
       // TODO - this function is throwing error
       const tx = await contract.depositToLoan(
         parseInt(params.loanId),
-        depositAmount
+        ethers.utils.parseEther(depositAmount.toFixed(2)),
+        options
       );
       const rc = await tx.wait();
-      const event = await rc.events?.filter((x)=> x.event == 'LoanRequested');
+      const event = await rc.events?.filter((x)=> x.event == 'LenderDeposit');
       const eventArgs = event[0].args;
-      setLenderAlreadyDeposited(eventArgs.loanId);
+      setLenderAlreadyDeposited(eventArgs.loanID);
     } catch (err) {
       setAppError(getErrMessage(err));
     }
@@ -110,7 +114,6 @@ function Lend() {
       loadDetails();
     }
   }, [contract]);
-
 
   return (
     <Panel>
@@ -145,7 +148,7 @@ function Lend() {
                     <TextField
                       style={{ width: '50%' }}
                       hiddenLabel                      
-                      value={loanDetails.loanAmount}
+                      value={ethers.utils.formatEther(loanDetails?.loanAmount?.toString())}
                       disabled
                     />
                   </Grid>
@@ -158,7 +161,7 @@ function Lend() {
                   <Grid item xs={6}>
                     <TextField
                       style={{ width: '50%' }}
-                      value={loanDetails.amountRemaining}
+                      value={ethers.utils.formatEther(loanDetails?.amountRemaining?.toString())}
                       hiddenLabel
                       disabled
                     />
