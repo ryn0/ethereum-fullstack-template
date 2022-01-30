@@ -11,6 +11,10 @@ const getLoanLink = (loanId) => {
   return `${window.location.origin}/lend/${loanId}`
 };
 
+const getRepayLink = (loanId) => {
+  return `${window.location.origin}/repay/${loanId}`
+};
+
 function Borrow() {
   const { contract, currentAccount } = useContext(Web3Context);
 
@@ -22,7 +26,7 @@ function Borrow() {
     try {
       console.log("generateLink() = contract: ", contract);
       const tx = await contract.createLoan(
-        ethers.utils.parseEther(amountRequested.toFixed(2)),
+        ethers.utils.parseEther(amountRequested),
       );
       const rc = await tx.wait();
       const event = rc.events.find(event => event.event === 'LoanRequested');
@@ -37,13 +41,14 @@ function Borrow() {
   const onChange = (e, field) => {
     const txt = e.target.value;
     if (field === 'amountRequested') {
-      setAmountRequested(parseInt(txt));
+      setAmountRequested(txt);
     }
   };
 
   const shouldDisableButton = () => {
     if (!amountRequested) return true;
-    const res = parseInt(amountRequested) <= 0;
+    if (amountRequested.slice(-1) === '.') return true;
+    const res = parseFloat(amountRequested) <= 0;
     return res;
   };
 
@@ -118,9 +123,14 @@ function Borrow() {
 
       {/* generated link */}
       {loanId ? (
+        
          <Box padding={3}>
+           <b>Loan Link:</b>
             <Alert severity="info">{getLoanLink(loanId)}</Alert>
+           <b>Repay Link:</b>
+            <Alert severity="info">{getRepayLink(loanId)}</Alert>
          </Box>
+
         ) : null}
 
       {appError ? (
